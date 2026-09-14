@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sonic Studio - Pemutar Musik Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    input[type=range] { accent-color: #6366f1; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Header App -->
+  <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i data-lucide="disc" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white">Sonic Studio</h1>
+          <p class="text-[11px] text-slate-400">Audio Player & Equalizer</p>
+        </div>
+      </div>
+      <div>
+        <label for="audio-upload" class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-lg shadow-indigo-600/30">
+          <i data-lucide="upload" class="w-4 h-4"></i> Upload Lagu
+        </label>
+        <input type="file" id="audio-upload" accept="audio/*" multiple class="hidden" onchange="handleFileUpload(event)">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Player & Equalizer -->
+    <section class="lg:col-span-7 space-y-6">
+      
+      <!-- Track Artwork & Info -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center justify-center text-center">
+        <div class="w-44 h-44 rounded-full bg-slate-950 border-4 border-slate-800 shadow-2xl flex items-center justify-center relative my-4">
+          <div id="art-disc" class="w-full h-full rounded-full bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center">
+            <i data-lucide="music-4" class="w-20 h-20 text-slate-700"></i>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-slate-950 border-2 border-slate-800 absolute flex items-center justify-center">
+            <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+          </div>
+        </div>
+
+        <div class="space-y-1 max-w-md">
+          <h2 id="current-title" class="text-lg font-bold text-white truncate">Belum ada lagu yang diputar</h2>
+          <p id="current-artist" class="text-xs text-slate-400">Silakan upload lagu lewat tombol di kanan atas</p>
+        </div>
+
+        <!-- Audio Canvas Visualizer -->
+        <div class="w-full h-16 mt-4">
+          <canvas id="visualizer" class="w-full h-full rounded-xl"></canvas>
+        </div>
+      </div>
+
+      <!-- EQUALIZER CONTROLS -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sliders" class="w-5 h-5 text-indigo-400"></i>
+            <h3 class="text-sm font-bold text-white">Equalizer Controls</h3>
+          </div>
+          <button onclick="resetEQ()" class="text-xs text-slate-400 hover:text-indigo-400 transition flex items-center gap-1">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+          
+          <!-- Bass Control -->
+          <div class="bg-slate-950/50 border border-slate-800/80 p-4 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                <i data-lucide="speaker" class="w-4 h-4 text-emerald-400"></i> Bass (Low EQ)
+              </span>
+              <span id="bass-val" class="text-xs font-mono font-bold text-emerald-400">0 dB</span>
+            </div>
+            <input type="range" id="bass-slider" min="-12" max="15" value="0" step="1" oninput="updateBass(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+          </div>
+
+          <!-- Vocal Control -->
+          <div class="bg-slate-950/50 border border-slate-800/80 p-4 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                <i data-lucide="mic" class="w-4 h-4 text-pink-400"></i> Suara Vokal (Mid EQ)
+              </span>
+              <span id="vocal-val" class="text-xs font-mono font-bold text-pink-400">0 dB</span>
+            </div>
+            <input type="range" id="vocal-slider" min="-12" max="15" value="0" step="1" oninput="updateVocal(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Playlist -->
+    <section class="lg:col-span-5 flex flex-col">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-5 shadow-xl flex-1">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="music" class="w-5 h-5 text-indigo-400"></i>
+            <h3 class="text-sm font-bold text-white">Daftar Putar</h3>
+          </div>
+          <span id="track-count" class="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-0.5 rounded-full">0 Lagu</span>
+        </div>
+
+        <div id="playlist-items" class="space-y-2 overflow-y-auto max-h-[380px]">
+          <div class="text-center py-12 text-slate-500 space-y-2">
+            <i data-lucide="folder-open" class="w-10 h-10 mx-auto opacity-40"></i>
+            <p class="text-xs">Belum ada lagu di playlist.<br>Klik tombol upload untuk memilih lagu dari perangkat Anda.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Control Bar -->
+  <footer class="bg-slate-900/90 border-t border-slate-800 backdrop-blur-xl sticky bottom-0 z-50 py-3 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="w-full flex items-center gap-3">
+        <span id="current-time" class="text-xs font-mono text-slate-400 w-10 text-right">0:00</span>
+        <input type="range" id="progress-bar" min="0" max="100" value="0" oninput="seekAudio(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer flex-1">
+        <span id="total-duration" class="text-xs font-mono text-slate-400 w-10">0:00</span>
+      </div>
+
+      <div class="flex items-center justify-between w-full sm:w-auto gap-6">
+        <div class="flex items-center gap-4 mx-auto sm:mx-0">
+          <button onclick="prevTrack()" class="text-slate-400 hover:text-white"><i data-lucide="skip-back" class="w-5 h-5"></i></button>
+          <button onclick="togglePlayPause()" id="btn-play" class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-lg shadow-indigo-600/40">
+            <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+          </button>
+          <button onclick="nextTrack()" class="text-slate-400 hover:text-white"><i data-lucide="skip-forward" class="w-5 h-5"></i></button>
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="volume-2" class="w-4 h-4 text-slate-400"></i>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" oninput="updateVolume(this.value)" class="w-20 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <audio id="audio-player" class="hidden"></audio>
+
+  <script>
+    let playlist = [];
+    let currentTrackIndex = -1;
+    let audioCtx, source, bassFilter, vocalFilter, analyser;
+    let isAudioCtxSetup = false;
+
+    const audioPlayer = document.getElementById('audio-player');
+    const playBtn = document.getElementById('btn-play');
+    const progressBar = document.getElementById('progress-bar');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalDurationEl = document.getElementById('total-duration');
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+
+    function setupWebAudio() {
+      if (isAudioCtxSetup) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      source = audioCtx.createMediaElementSource(audioPlayer);
+      
+      // Bass Filter (Low-shelf)
+      bassFilter = audioCtx.createBiquadFilter();
+      bassFilter.type = 'lowshelf';
+      bassFilter.frequency.value = 200;
+      bassFilter.gain.value = 0;
+
+      // Vocal Filter (Peaking Mid)
+      vocalFilter = audioCtx.createBiquadFilter();
+      vocalFilter.type = 'peaking';
+      vocalFilter.frequency.value = 1500;
+      vocalFilter.Q.value = 1;
+      vocalFilter.gain.value = 0;
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+
+      source.connect(bassFilter);
+      bassFilter.connect(vocalFilter);
+      vocalFilter.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      isAudioCtxSetup = true;
+      drawVisualizer();
+    }
+
+    function handleFileUpload(e) {
+      const files = e.target.files;
+      if (!files.length) return;
+      for (let file of files) {
+        const url = URL.createObjectURL(file);
+        playlist.push({ title: file.name.replace(/\.[^/.]+$/, ""), url: url });
+      }
+      renderPlaylist();
+      if (currentTrackIndex === -1) loadTrack(0);
+    }
+
+    function renderPlaylist() {
+      const container = document.getElementById('playlist-items');
+      document.getElementById('track-count').innerText = `${playlist.length} Lagu`;
+      if (playlist.length === 0) return;
+
+      container.innerHTML = playlist.map((track, i) => `
+        <div onclick="loadTrack(${i})" class="flex items-center justify-between p-3 rounded-2xl cursor-pointer transition ${i === currentTrackIndex ? 'bg-indigo-600/20 border border-indigo-500/40 text-white' : 'bg-slate-950/40 hover:bg-slate-950/80 border border-slate-800/50 text-slate-300'}">
+          <div class="flex items-center gap-3 truncate">
+            <div class="w-8 h-8 rounded-xl ${i === currentTrackIndex ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'} flex items-center justify-center shrink-0">
+              <i data-lucide="${i === currentTrackIndex ? 'disc' : 'music'}" class="w-4 h-4"></i>
+            </div>
+            <p class="text-xs font-semibold truncate">${track.title}</p>
+          </div>
+          <button onclick="deleteTrack(event, ${i})" class="text-slate-500 hover:text-rose-400 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function loadTrack(index) {
+      if (index < 0 || index >= playlist.length) return;
+      currentTrackIndex = index;
+      audioPlayer.src = playlist[index].url;
+      document.getElementById('current-title').innerText = playlist[index].title;
+      renderPlaylist();
+      playAudio();
+    }
+
+    function playAudio() {
+      setupWebAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      audioPlayer.play();
+      playBtn.innerHTML = `<i data-lucide="pause" class="w-5 h-5 fill-current"></i>`;
+      lucide.createIcons();
+    }
+
+    function pauseAudio() {
+      audioPlayer.pause();
+      playBtn.innerHTML = `<i data-lucide="play" class="w-5 h-5 fill-current"></i>`;
+      lucide.createIcons();
+    }
+
+    function togglePlayPause() {
+      if (playlist.length === 0) return;
+      audioPlayer.paused ? playAudio() : pauseAudio();
+    }
+
+    function nextTrack() {
+      if (playlist.length === 0) return;
+      loadTrack((currentTrackIndex + 1) % playlist.length);
+    }
+
+    function prevTrack() {
+      if (playlist.length === 0) return;
+      loadTrack((currentTrackIndex - 1 + playlist.length) % playlist.length);
+    }
+
+    function deleteTrack(e, index) {
+      e.stopPropagation();
+      playlist.splice(index, 1);
+      if (index === currentTrackIndex) {
+        playlist.length > 0 ? loadTrack(0) : pauseAudio();
+      }
+      renderPlaylist();
+    }
+
+    function updateBass(val) {
+      document.getElementById('bass-val').innerText = `${val > 0 ? '+' : ''}${val} dB`;
+      if (bassFilter) bassFilter.gain.value = parseFloat(val);
+    }
+
+    function updateVocal(val) {
+      document.getElementById('vocal-val').innerText = `${val > 0 ? '+' : ''}${val} dB`;
+      if (vocalFilter) vocalFilter.gain.value = parseFloat(val);
+    }
+
+    function resetEQ() {
+      document.getElementById('bass-slider').value = 0;
+      document.getElementById('vocal-slider').value = 0;
+      updateBass(0);
+      updateVocal(0);
+    }
+
+    function updateVolume(val) { audioPlayer.volume = val; }
+
+    function seekAudio(val) {
+      if (audioPlayer.duration) audioPlayer.currentTime = (val / 100) * audioPlayer.duration;
+    }
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (audioPlayer.duration) {
+        progressBar.value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        currentTimeEl.innerText = formatTime(audioPlayer.currentTime);
+        totalDurationEl.innerText = formatTime(audioPlayer.duration);
+      }
+    });
+
+    audioPlayer.addEventListener('ended', nextTrack);
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      if (!analyser) return;
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(dataArray);
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      const barWidth = (canvas.width / dataArray.length) * 2;
+      let x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height;
+        const gradient = canvasCtx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0, '#6366f1');
+        gradient.addColorStop(1, '#ec4899');
+        canvasCtx.fillStyle = gradient;
+        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
+        x += barWidth;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+  </script>
+</body>
+</html>
