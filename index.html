@@ -359,7 +359,7 @@
       statusEl.classList.remove('hidden');
 
       try {
-        const response = await fetch('https://api.cobalt.tools/api/json', {
+        const response = await fetch('https://cobalt-api.kwippy.com/api/json', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
@@ -372,16 +372,22 @@
           })
         });
 
-        const result = await response.json();
+        if (!response.ok) {
+          throw new Error('Gagal mengakses layanan konversi.');
+        }
 
-        if (!result.url) {
-          throw new Error('Gagal mendapatkan tautan audio YouTube.');
+        const result = await response.json();
+        const downloadUrl = result.url || (result.picker && result.picker[0]?.url);
+
+        if (!downloadUrl) {
+          throw new Error(result.text || 'Gagal mendapatkan tautan audio YouTube.');
         }
 
         statusEl.innerText = 'Mengunduh file audio...';
-        const audioRes = await fetch(result.url);
-        const audioBlob = await audioRes.blob();
+        const audioRes = await fetch(downloadUrl);
+        if (!audioRes.ok) throw new Error('Gagal mengunduh audio dari server.');
 
+        const audioBlob = await audioRes.blob();
         const title = result.filename || `YouTube_Track_${Date.now()}.mp3`;
 
         statusEl.innerText = 'Mengunggah MP3 ke Google Drive...';
@@ -413,8 +419,8 @@
           alert('Gagal mengunggah hasil konversi ke Drive.');
         }
       } catch (err) {
-        console.error(err);
-        alert('Terjadi kesalahan saat konversi YouTube ke MP3.');
+        console.error('Error detail:', err);
+        alert(`Terjadi kesalahan: ${err.message || 'Gagal konversi YouTube ke MP3'}`);
       } finally {
         statusEl.classList.add('hidden');
       }
