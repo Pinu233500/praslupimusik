@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrasLupi Musik</title>
+  <title>PrasLupi Musik - Vinyl Player</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -31,12 +31,38 @@
     }
 
     /* Animasi Putar Piringan Hitam */
-    @keyframes spin-slow {
+    @keyframes spin-vinyl {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
-    .animate-spin-slow {
-      animation: spin-slow 8s linear infinite;
+    .animate-spin-vinyl {
+      animation: spin-vinyl 4s linear infinite;
+    }
+
+    /* Efek Alur Grooves Piringan Hitam */
+    .vinyl-grooves {
+      background: radial-gradient(circle, 
+        #111 18%, 
+        #222 20%, 
+        #111 25%, 
+        #2a2a2a 35%, 
+        #111 40%, 
+        #222 55%, 
+        #111 60%, 
+        #222 70%
+      );
+    }
+
+    /* Animasi Tuas Pemutar Lagu (Tonearm) */
+    .tonearm {
+      transform-origin: 24px 24px;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tonearm-playing {
+      transform: rotate(26deg);
+    }
+    .tonearm-idle {
+      transform: rotate(0deg);
     }
   </style>
 </head>
@@ -54,75 +80,42 @@
       </button>
     </div>
 
-    <!-- EQUALIZER CONTROLS -->
-    <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2 font-bold text-lg text-slate-100">
-          <i data-lucide="sliders" class="text-indigo-400"></i> Equalizer Controls
-        </div>
-        <button onclick="resetEQ()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
-          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
-        </button>
-      </div>
-
-      <!-- Bass Slider -->
-      <div class="bg-[#0e1322] p-3.5 rounded-xl border border-slate-800/80">
-        <div class="flex justify-between text-sm mb-2">
-          <span class="flex items-center gap-2 font-medium text-emerald-400">
-            <i data-lucide="speaker" class="w-4 h-4"></i> Bass (Low EQ)
-          </span>
-          <span id="bass-val" class="font-bold text-emerald-400">0 dB</span>
-        </div>
-        <input type="range" id="bass" min="-12" max="12" value="0" oninput="updateEQ()" class="w-full">
-      </div>
-
-      <!-- Vokal Slider -->
-      <div class="bg-[#0e1322] p-3.5 rounded-xl border border-slate-800/80">
-        <div class="flex justify-between text-sm mb-2">
-          <span class="flex items-center gap-2 font-medium text-pink-400">
-            <i data-lucide="mic" class="w-4 h-4"></i> Vokal (Mid EQ)
-          </span>
-          <span id="vokal-val" class="font-bold text-pink-400">0 dB</span>
-        </div>
-        <input type="range" id="vokal" min="-12" max="12" value="0" oninput="updateEQ()" class="w-full">
-      </div>
-    </div>
-
-    <!-- PLAYLIST SECTION -->
-    <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2 font-bold text-lg">
-          <i data-lucide="folder-heart" class="text-indigo-400"></i> Google Drive Playlist
-        </div>
-        <span id="track-count" class="bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-xs px-2.5 py-1 rounded-full font-medium">0 Lagu</span>
-      </div>
-
-      <!-- Playlist Container -->
-      <div id="playlist-container" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-        <div class="text-slate-400 text-sm text-center py-6">Silakan login terlebih dahulu.</div>
-      </div>
-    </div>
-
-    <!-- AUDIO PLAYER CONTROLS WITH VISUALIZER & DISC -->
+    <!-- AUDIO PLAYER & VINYL TURNTABLE -->
     <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
       
-      <!-- Visual Disc & Playing Indicator -->
-      <div class="flex flex-col items-center justify-center pt-2">
-        <div id="album-art" class="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-900 to-slate-800 border-4 border-slate-700/50 flex items-center justify-center shadow-2xl relative transition-transform">
-          <div class="w-8 h-8 rounded-full bg-[#0b0f19] border-2 border-indigo-500/50 flex items-center justify-center">
-            <div class="w-2.5 h-2.5 rounded-full bg-indigo-400"></div>
+      <!-- Turntable Deck -->
+      <div class="relative bg-[#0e1322] border border-slate-800 p-6 rounded-2xl flex items-center justify-center overflow-hidden shadow-inner h-64">
+        
+        <!-- Piringan Hitam (Vinyl Record) -->
+        <div id="vinyl-disc" class="w-48 h-48 rounded-full vinyl-grooves border-4 border-slate-900 shadow-2xl flex items-center justify-center relative transition-transform">
+          <!-- Label Tengah Piringan -->
+          <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-700 to-pink-600 border-2 border-slate-900 flex items-center justify-center shadow-md">
+            <div class="w-4 h-4 rounded-full bg-[#0b0f19] border border-slate-700"></div>
           </div>
         </div>
+
+        <!-- Tuas Pemutar Lagu (Tonearm) -->
+        <div id="tonearm" class="tonearm tonearm-idle absolute top-4 right-8 w-12 h-44 pointer-events-none z-10">
+          <!-- Base / Engsel Tuas -->
+          <div class="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-500 shadow-md flex items-center justify-center">
+            <div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-600"></div>
+          </div>
+          <!-- Batang Metallik Tuas -->
+          <div class="w-2 h-28 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full ml-[21px] -mt-2 shadow-lg"></div>
+          <!-- Headshell & Jarum (Cartridge) -->
+          <div class="w-4 h-8 bg-slate-900 border border-slate-600 rounded-sm ml-[17px] -mt-1 shadow-md transform -rotate-12"></div>
+        </div>
+
       </div>
 
       <!-- Judul Lagu -->
-      <div id="current-title" class="text-center font-medium text-slate-200 text-sm truncate px-2">
+      <div id="current-title" class="text-center font-semibold text-slate-200 text-sm truncate px-2">
         Tidak ada lagu dipilih
       </div>
 
       <!-- Visualizer Spektrum Audio Naik-Turun -->
       <div class="w-full bg-[#0e1322] p-2.5 rounded-xl border border-slate-800/80 flex justify-center items-center">
-        <canvas id="visualizer" class="w-full h-12 rounded"></canvas>
+        <canvas id="visualizer" class="w-full h-10 rounded"></canvas>
       </div>
 
       <audio id="audio-player" crossorigin="anonymous"></audio>
@@ -162,10 +155,74 @@
         </div>
 
         <!-- Volume Control -->
-        <div class="flex items-center gap-3 bg-[#0e1322] px-3 py-2 rounded-xl border border-slate-800/80 mt-2">
+        <div class="flex items-center gap-3 bg-[#0e1322] px-3 py-2 rounded-xl border border-slate-800/80 mt-1">
           <i data-lucide="volume-2" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
           <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="1" oninput="adjustVolume()" class="w-full">
         </div>
+      </div>
+    </div>
+
+    <!-- EQUALIZER CONTROLS -->
+    <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2 font-bold text-lg text-slate-100">
+          <i data-lucide="sliders" class="text-indigo-400"></i> Equalizer Controls
+        </div>
+        <button onclick="resetEQ()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+        </button>
+      </div>
+
+      <!-- Bass Slider -->
+      <div class="bg-[#0e1322] p-3.5 rounded-xl border border-slate-800/80">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="flex items-center gap-2 font-medium text-emerald-400">
+            <i data-lucide="speaker" class="w-4 h-4"></i> Bass (Low EQ)
+          </span>
+          <span id="bass-val" class="font-bold text-emerald-400">0 dB</span>
+        </div>
+        <input type="range" id="bass" min="-12" max="12" value="0" oninput="updateEQ()" class="w-full">
+      </div>
+
+      <!-- Vokal Slider -->
+      <div class="bg-[#0e1322] p-3.5 rounded-xl border border-slate-800/80">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="flex items-center gap-2 font-medium text-pink-400">
+            <i data-lucide="mic" class="w-4 h-4"></i> Vokal (Mid EQ)
+          </span>
+          <span id="vokal-val" class="font-bold text-pink-400">0 dB</span>
+        </div>
+        <input type="range" id="vokal" min="-12" max="12" value="0" oninput="updateEQ()" class="w-full">
+      </div>
+    </div>
+
+    <!-- ALBUM & PLAYLIST SECTION -->
+    <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2 font-bold text-lg">
+          <i data-lucide="folder-heart" class="text-indigo-400"></i> Google Drive Playlist
+        </div>
+        <span id="track-count" class="bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-xs px-2.5 py-1 rounded-full font-medium">0 Lagu</span>
+      </div>
+
+      <!-- Form Buat Album Baru -->
+      <div class="flex gap-2">
+        <input type="text" id="album-input" placeholder="Nama Album Baru..." class="flex-grow bg-[#0e1322] text-sm px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-200">
+        <button onclick="createAlbum()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1 flex-shrink-0">
+          <i data-lucide="folder-plus" class="w-4 h-4"></i> Buat Album
+        </button>
+      </div>
+
+      <!-- Filter Kategori Album -->
+      <div class="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none" id="album-tabs">
+        <button onclick="filterAlbum('Semua')" class="album-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0">
+          Semua
+        </button>
+      </div>
+
+      <!-- Playlist Container -->
+      <div id="playlist-container" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+        <div class="text-slate-400 text-sm text-center py-6">Silakan login terlebih dahulu.</div>
       </div>
     </div>
 
@@ -179,6 +236,8 @@
     let tokenClient;
     let accessToken = null;
     let playlist = [];
+    let albums = ['Semua'];
+    let currentAlbum = 'Semua';
     let currentTrackIndex = -1;
 
     // Playback Modes
@@ -186,7 +245,7 @@
     let isRepeat = false;
 
     // WEB AUDIO API FOR EQUALIZER & VISUALIZER
-    let audioCtx, trackSource, bassFilter, vokalFilter, analyser, visualizerAnimId;
+    let audioCtx, trackSource, bassFilter, vokalFilter, analyser;
     const audioPlayer = document.getElementById('audio-player');
     const canvas = document.getElementById('visualizer');
     const canvasCtx = canvas.getContext('2d');
@@ -196,7 +255,6 @@
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         trackSource = audioCtx.createMediaElementSource(audioPlayer);
 
-        // Equalizer Filters
         bassFilter = audioCtx.createBiquadFilter();
         bassFilter.type = 'lowshelf';
         bassFilter.frequency.value = 250;
@@ -206,11 +264,9 @@
         vokalFilter.frequency.value = 1000;
         vokalFilter.Q.value = 1;
 
-        // Analyser node untuk grafik spektrum musik
         analyser = audioCtx.createAnalyser();
         analyser.fftSize = 64;
 
-        // Rantai audio: Source -> Bass -> Vokal -> Analyser -> Destination
         trackSource.connect(bassFilter);
         bassFilter.connect(vokalFilter);
         vokalFilter.connect(analyser);
@@ -220,7 +276,6 @@
       }
     }
 
-    // ANIMASI SPEKTRUM AUDIO NAIK-TURUN SAMA DENGAN IRAMA
     function drawVisualizer() {
       canvas.width = canvas.parentElement.clientWidth;
       canvas.height = canvas.parentElement.clientHeight;
@@ -229,7 +284,7 @@
       const dataArray = new Uint8Array(bufferLength);
 
       function renderFrame() {
-        visualizerAnimId = requestAnimationFrame(renderFrame);
+        requestAnimationFrame(renderFrame);
         analyser.getByteFrequencyData(dataArray);
 
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
@@ -241,7 +296,6 @@
         for (let i = 0; i < bufferLength; i++) {
           barHeight = (dataArray[i] / 255) * canvas.height;
 
-          // Warna gradien batang spektrum musik
           const gradient = canvasCtx.createLinearGradient(0, canvas.height, 0, 0);
           gradient.addColorStop(0, '#6366f1');
           gradient.addColorStop(1, '#ec4899');
@@ -277,6 +331,12 @@
     // GOOGLE OAUTH & AUTO-LOGIN MANAGEMENT
     window.onload = () => {
       lucide.createIcons();
+
+      const savedAlbums = localStorage.getItem('music_albums');
+      if (savedAlbums) {
+        albums = JSON.parse(savedAlbums);
+      }
+      renderAlbums();
 
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
@@ -329,11 +389,82 @@
         }
 
         const data = await res.json();
-        playlist = data.files || [];
-        document.getElementById('track-count').innerText = `${playlist.length} Lagu`;
+        const files = data.files || [];
+        
+        const deletedIds = JSON.parse(localStorage.getItem('deleted_tracks') || '[]');
+        const albumAssignments = JSON.parse(localStorage.getItem('album_assignments') || '{}');
+
+        playlist = files
+          .filter(file => !deletedIds.includes(file.id))
+          .map(file => ({
+            ...file,
+            album: albumAssignments[file.id] || 'Semua'
+          }));
+
         renderPlaylist();
       } catch (err) {
         console.error('Gagal mengambil playlist:', err);
+      }
+    }
+
+    // MANAJEMEN ALBUM
+    function createAlbum() {
+      const nameInput = document.getElementById('album-input');
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      if (!albums.includes(name)) {
+        albums.push(name);
+        localStorage.setItem('music_albums', JSON.stringify(albums));
+        renderAlbums();
+        nameInput.value = '';
+      }
+    }
+
+    function renderAlbums() {
+      const container = document.getElementById('album-tabs');
+      container.innerHTML = '';
+
+      albums.forEach(album => {
+        const isActive = album === currentAlbum;
+        const btn = document.createElement('button');
+        btn.className = `album-btn text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0 ${
+          isActive 
+            ? 'bg-indigo-600 text-white' 
+            : 'bg-[#0e1322] text-slate-400 hover:text-white border border-slate-800'
+        }`;
+        btn.innerText = album;
+        btn.onclick = () => filterAlbum(album);
+        container.appendChild(btn);
+      });
+    }
+
+    function filterAlbum(album) {
+      currentAlbum = album;
+      renderAlbums();
+      renderPlaylist();
+    }
+
+    function assignAlbum(trackId, albumName) {
+      const albumAssignments = JSON.parse(localStorage.getItem('album_assignments') || '{}');
+      albumAssignments[trackId] = albumName;
+      localStorage.setItem('album_assignments', JSON.stringify(albumAssignments));
+
+      const track = playlist.find(t => t.id === trackId);
+      if (track) track.album = albumName;
+      renderPlaylist();
+    }
+
+    // MANAJEMEN HAPUS LAGU
+    function removeTrack(trackId, event) {
+      event.stopPropagation();
+      if (confirm('Apakah Anda yakin ingin menghapus lagu ini dari playlist?')) {
+        const deletedIds = JSON.parse(localStorage.getItem('deleted_tracks') || '[]');
+        deletedIds.push(trackId);
+        localStorage.setItem('deleted_tracks', JSON.stringify(deletedIds));
+
+        playlist = playlist.filter(track => track.id !== trackId);
+        renderPlaylist();
       }
     }
 
@@ -341,26 +472,48 @@
       const container = document.getElementById('playlist-container');
       container.innerHTML = '';
 
-      if (playlist.length === 0) {
+      const filteredList = currentAlbum === 'Semua' 
+        ? playlist 
+        : playlist.filter(item => item.album === currentAlbum);
+
+      document.getElementById('track-count').innerText = `${filteredList.length} Lagu`;
+
+      if (filteredList.length === 0) {
         container.innerHTML = '<div class="text-slate-400 text-sm text-center py-6">Tidak ada file audio ditemukan.</div>';
         return;
       }
 
-      playlist.forEach((file, index) => {
-        const isActive = index === currentTrackIndex;
+      filteredList.forEach((file) => {
+        const originalIndex = playlist.findIndex(t => t.id === file.id);
+        const isActive = originalIndex === currentTrackIndex;
+
         const item = document.createElement('div');
-        item.className = `flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${
+        item.className = `flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
           isActive 
             ? 'bg-indigo-900/30 border-indigo-500/80 text-indigo-200' 
             : 'bg-[#0e1322] border-slate-800 hover:border-slate-700 text-slate-300'
         }`;
-        item.onclick = () => playTrack(index);
+        item.onclick = () => playTrack(originalIndex);
+
+        const albumOptions = albums.map(a => 
+          `<option value="${a}" ${a === file.album ? 'selected' : ''}>${a}</option>`
+        ).join('');
 
         item.innerHTML = `
-          <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
-            <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5 ${isActive ? 'animate-spin-slow' : ''}"></i>
+          <div class="flex items-center gap-3 overflow-hidden mr-2">
+            <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
+              <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5"></i>
+            </div>
+            <div class="text-sm font-medium truncate">${file.name}</div>
           </div>
-          <div class="text-sm font-medium truncate">${file.name}</div>
+          <div class="flex items-center gap-2 flex-shrink-0" onclick="event.stopPropagation()">
+            <select onchange="assignAlbum('${file.id}', this.value)" class="bg-[#151c2e] text-slate-400 border border-slate-700 text-xs rounded-md px-1.5 py-1 focus:outline-none">
+              ${albumOptions}
+            </select>
+            <button onclick="removeTrack('${file.id}', event)" class="text-slate-500 hover:text-red-400 p-1 transition" title="Hapus Lagu">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
         `;
         container.appendChild(item);
       });
@@ -410,14 +563,19 @@
 
     function updatePlayButton(isPlaying) {
       const btn = document.getElementById('play-btn');
-      const albumArt = document.getElementById('album-art');
+      const vinylDisc = document.getElementById('vinyl-disc');
+      const tonearm = document.getElementById('tonearm');
 
       if (isPlaying) {
         btn.innerHTML = '<i data-lucide="pause" class="w-6 h-6 fill-current"></i>';
-        albumArt.classList.add('animate-spin-slow');
+        vinylDisc.classList.add('animate-spin-vinyl');
+        tonearm.classList.remove('tonearm-idle');
+        tonearm.classList.add('tonearm-playing');
       } else {
         btn.innerHTML = '<i data-lucide="play" class="w-6 h-6 fill-current ml-0.5"></i>';
-        albumArt.classList.remove('animate-spin-slow');
+        vinylDisc.classList.remove('animate-spin-vinyl');
+        tonearm.classList.remove('tonearm-playing');
+        tonearm.classList.add('tonearm-idle');
       }
       lucide.createIcons();
     }
