@@ -29,6 +29,15 @@
       cursor: pointer;
       box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
     }
+
+    /* Animasi Putar Piringan Hitam */
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 8s linear infinite;
+    }
   </style>
 </head>
 <body class="bg-[#0b0f19] text-white min-h-screen flex justify-center p-4 sm:p-6 font-sans">
@@ -94,10 +103,26 @@
       </div>
     </div>
 
-    <!-- AUDIO PLAYER CONTROLS -->
+    <!-- AUDIO PLAYER CONTROLS WITH VISUALIZER & DISC -->
     <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
+      
+      <!-- Visual Disc & Playing Indicator -->
+      <div class="flex flex-col items-center justify-center pt-2">
+        <div id="album-art" class="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-900 to-slate-800 border-4 border-slate-700/50 flex items-center justify-center shadow-2xl relative transition-transform">
+          <div class="w-8 h-8 rounded-full bg-[#0b0f19] border-2 border-indigo-500/50 flex items-center justify-center">
+            <div class="w-2.5 h-2.5 rounded-full bg-indigo-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Judul Lagu -->
       <div id="current-title" class="text-center font-medium text-slate-200 text-sm truncate px-2">
         Tidak ada lagu dipilih
+      </div>
+
+      <!-- Visualizer Spektrum Audio Naik-Turun -->
+      <div class="w-full bg-[#0e1322] p-2.5 rounded-xl border border-slate-800/80 flex justify-center items-center">
+        <canvas id="visualizer" class="w-full h-12 rounded"></canvas>
       </div>
 
       <audio id="audio-player" crossorigin="anonymous"></audio>
@@ -160,15 +185,18 @@
     let isShuffle = false;
     let isRepeat = false;
 
-    // WEB AUDIO API FOR EQUALIZER
-    let audioCtx, trackSource, bassFilter, vokalFilter;
+    // WEB AUDIO API FOR EQUALIZER & VISUALIZER
+    let audioCtx, trackSource, bassFilter, vokalFilter, analyser, visualizerAnimId;
     const audioPlayer = document.getElementById('audio-player');
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
 
     function initAudioContext() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         trackSource = audioCtx.createMediaElementSource(audioPlayer);
 
+        // Equalizer Filters
         bassFilter = audioCtx.createBiquadFilter();
         bassFilter.type = 'lowshelf';
         bassFilter.frequency.value = 250;
@@ -178,10 +206,55 @@
         vokalFilter.frequency.value = 1000;
         vokalFilter.Q.value = 1;
 
+        // Analyser node untuk grafik spektrum musik
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+
+        // Rantai audio: Source -> Bass -> Vokal -> Analyser -> Destination
         trackSource.connect(bassFilter);
         bassFilter.connect(vokalFilter);
-        vokalFilter.connect(audioCtx.destination);
+        vokalFilter.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        drawVisualizer();
       }
+    }
+
+    // ANIMASI SPEKTRUM AUDIO NAIK-TURUN SAMA DENGAN IRAMA
+    function drawVisualizer() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      function renderFrame() {
+        visualizerAnimId = requestAnimationFrame(renderFrame);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 1.5;
+        let barHeight;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = (dataArray[i] / 255) * canvas.height;
+
+          // Warna gradien batang spektrum musik
+          const gradient = canvasCtx.createLinearGradient(0, canvas.height, 0, 0);
+          gradient.addColorStop(0, '#6366f1');
+          gradient.addColorStop(1, '#ec4899');
+
+          canvasCtx.fillStyle = gradient;
+          canvasCtx.beginPath();
+          canvasCtx.roundRect(x, canvas.height - barHeight, barWidth - 2, barHeight, 4);
+          canvasCtx.fill();
+
+          x += barWidth + 1;
+        }
+      }
+      renderFrame();
     }
 
     function updateEQ() {
@@ -285,7 +358,7 @@
 
         item.innerHTML = `
           <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
-            <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5"></i>
+            <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5 ${isActive ? 'animate-spin-slow' : ''}"></i>
           </div>
           <div class="text-sm font-medium truncate">${file.name}</div>
         `;
@@ -337,9 +410,15 @@
 
     function updatePlayButton(isPlaying) {
       const btn = document.getElementById('play-btn');
-      btn.innerHTML = isPlaying 
-        ? '<i data-lucide="pause" class="w-6 h-6 fill-current"></i>' 
-        : '<i data-lucide="play" class="w-6 h-6 fill-current ml-0.5"></i>';
+      const albumArt = document.getElementById('album-art');
+
+      if (isPlaying) {
+        btn.innerHTML = '<i data-lucide="pause" class="w-6 h-6 fill-current"></i>';
+        albumArt.classList.add('animate-spin-slow');
+      } else {
+        btn.innerHTML = '<i data-lucide="play" class="w-6 h-6 fill-current ml-0.5"></i>';
+        albumArt.classList.remove('animate-spin-slow');
+      }
       lucide.createIcons();
     }
 
