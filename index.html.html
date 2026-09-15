@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrasLupi Musik</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #151c2e;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.2s;
+    }
+
+    .btn:hover { background: var(--primary-hover); }
+    .btn-danger { background: #ef4444; }
+
+    .eq-group {
+      margin-bottom: 12px;
+    }
+
+    .eq-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    .playlist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .playlist-item.active {
+      border: 1px solid var(--primary);
+      background: rgba(99, 102, 241, 0.15);
+    }
+
+    .player-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- AUTH SECTION -->
+  <div class="card" id="auth-section">
+    <button id="login-btn" class="btn" onclick="handleAuthClick()">Login Google Drive</button>
+    <button id="logout-btn" class="btn btn-danger" style="display: none;" onclick="handleLogout()">Logout</button>
+  </div>
+
+  <!-- EQUALIZER CONTROLS -->
+  <div class="card">
+    <h3>Equalizer Controls</h3>
+    <div class="eq-group">
+      <div class="eq-label"><span>Bass (Low EQ)</span><span id="bass-val">0 dB</span></div>
+      <input type="range" id="bass" min="-12" max="12" value="0" oninput="updateEQ()">
+    </div>
+    <div class="eq-group">
+      <div class="eq-label"><span>Vokal (Mid EQ)</span><span id="vokal-val">0 dB</span></div>
+      <input type="range" id="vokal" min="-12" max="12" value="0" oninput="updateEQ()">
+    </div>
+  </div>
+
+  <!-- PLAYLIST SECTION -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3>Google Drive Playlist</h3>
+      <span id="track-count" style="color: var(--text-muted); font-size: 14px;">0 Lagu</span>
+    </div>
+    <div id="playlist-container">
+      <p style="color: var(--text-muted); font-size: 14px;">Silakan login terlebih dahulu.</p>
+    </div>
+  </div>
+
+  <!-- AUDIO PLAYER SECTION -->
+  <div class="card player-controls">
+    <div id="current-title" style="font-weight: 600; text-align: center;">Tidak ada lagu dipilih</div>
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+    <div class="nav-btns">
+      <button class="btn" onclick="prevTrack()" style="width: auto;">⏮</button>
+      <button class="btn" id="play-btn" onclick="togglePlay()" style="width: auto;">▶</button>
+      <button class="btn" onclick="nextTrack()" style="width: auto;">⏭</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // GOOGLE OAUTH CONFIGURATION
+  const CLIENT_ID = '524216548694-b7ds.apps.googleusercontent.com'; // Sesuaikan jika ada ID lengkap
+  const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+
+  let tokenClient;
+  let accessToken = null;
+  let playlist = [];
+  let currentTrackIndex = -1;
+
+  // WEB AUDIO API FOR EQUALIZER
+  let audioCtx, trackSource, bassFilter, vokalFilter;
+  const audioPlayer = document.getElementById('audio-player');
+
+  function initAudioContext() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      trackSource = audioCtx.createMediaElementSource(audioPlayer);
+
+      bassFilter = audioCtx.createBiquadFilter();
+      bassFilter.type = 'lowshelf';
+      bassFilter.frequency.value = 250;
+
+      vokalFilter = audioCtx.createBiquadFilter();
+      vokalFilter.type = 'peaking';
+      vokalFilter.frequency.value = 1000;
+      vokalFilter.Q.value = 1;
+
+      trackSource.connect(bassFilter);
+      bassFilter.connect(vokalFilter);
+      vokalFilter.connect(audioCtx.destination);
+    }
+  }
+
+  function updateEQ() {
+    const bass = document.getElementById('bass').value;
+    const vokal = document.getElementById('vokal').value;
+
+    document.getElementById('bass-val').innerText = `${bass} dB`;
+    document.getElementById('vokal-val').innerText = `${vokal} dB`;
+
+    if (bassFilter) bassFilter.gain.value = bass;
+    if (vokalFilter) vokalFilter.gain.value = vokal;
+  }
+
+  // GOOGLE OAUTH & AUTO-LOGIN MANAGEMENT
+  window.onload = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (response) => {
+        if (response.access_token) {
+          accessToken = response.access_token;
+          localStorage.setItem('gdrive_access_token', accessToken);
+          onLoginSuccess();
+        }
+      },
+    });
+
+    // Cek token tersimpan di browser
+    const savedToken = localStorage.getItem('gdrive_access_token');
+    if (savedToken) {
+      accessToken = savedToken;
+      onLoginSuccess();
+    }
+  };
+
+  function handleAuthClick() {
+    if (!accessToken) {
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('gdrive_access_token');
+    accessToken = null;
+    location.reload();
+  }
+
+  function onLoginSuccess() {
+    document.getElementById('login-btn').style.display = 'none';
+    document.getElementById('logout-btn').style.display = 'block';
+    fetchDriveFiles();
+  }
+
+  // AMBIL DAFTAR LAGU DARI GOOGLE DRIVE
+  async function fetchDriveFiles() {
+    try {
+      const res = await fetch(
+        "https://www.googleapis.com/drive/v3/files?q=mimeType contains 'audio/'&fields=files(id, name)",
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (res.status === 401) {
+        // Token kadaluarsa
+        handleLogout();
+        return;
+      }
+
+      const data = await res.json();
+      playlist = data.files || [];
+      document.getElementById('track-count').innerText = `${playlist.length} Lagu`;
+      renderPlaylist();
+    } catch (err) {
+      console.error('Gagal mengambil playlist:', err);
+    }
+  }
+
+  function renderPlaylist() {
+    const container = document.getElementById('playlist-container');
+    container.innerHTML = '';
+
+    if (playlist.length === 0) {
+      container.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">Tidak ada file audio ditemukan.</p>';
+      return;
+    }
+
+    playlist.forEach((file, index) => {
+      const item = document.createElement('div');
+      item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+      item.onclick = () => playTrack(index);
+      item.innerHTML = `<span>🎵</span> <span>${file.name}</span>`;
+      container.appendChild(item);
+    });
+  }
+
+  // MEMUTAR AUDIO DENGAN FETCH BLOB (MENGHINDARI CORS/BLOKIR)
+  async function playTrack(index) {
+    initAudioContext();
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+
+    currentTrackIndex = index;
+    const file = playlist[index];
+    document.getElementById('current-title').innerText = file.name;
+    renderPlaylist();
+
+    try {
+      const res = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (!res.ok) throw new Error('File gagal dimuat');
+
+      const blob = await res.blob();
+      audioPlayer.src = URL.createObjectURL(blob);
+      audioPlayer.play();
+      document.getElementById('play-btn').innerText = '⏸';
+    } catch (err) {
+      alert('Gagal memutar audio. Coba login ulang.');
+      console.error(err);
+    }
+  }
+
+  function togglePlay() {
+    if (!audioPlayer.src) return;
+    if (audioPlayer.paused) {
+      audioPlayer.play();
+      document.getElementById('play-btn').innerText = '⏸';
+    } else {
+      audioPlayer.pause();
+      document.getElementById('play-btn').innerText = '▶';
+    }
+  }
+
+  function nextTrack() {
+    if (playlist.length === 0) return;
+    const next = (currentTrackIndex + 1) % playlist.length;
+    playTrack(next);
+  }
+
+  function prevTrack() {
+    if (playlist.length === 0) return;
+    const prev = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+    playTrack(prev);
+  }
+</script>
+
+</body>
+</html>
