@@ -22,12 +22,12 @@
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 18px;
-      width: 18px;
+      height: 16px;
+      width: 16px;
       border-radius: 50%;
       background: #818cf8;
       cursor: pointer;
-      box-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+      box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
     }
   </style>
 </head>
@@ -102,17 +102,45 @@
 
       <audio id="audio-player" crossorigin="anonymous"></audio>
 
-      <!-- Navigation & Play Buttons -->
-      <div class="flex justify-center items-center gap-6 pt-1">
-        <button onclick="prevTrack()" class="text-slate-400 hover:text-white transition">
-          <i data-lucide="skip-back" class="w-6 h-6"></i>
-        </button>
-        <button id="play-btn" onclick="togglePlay()" class="w-12 h-12 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center transition shadow-lg shadow-indigo-600/40">
-          <i data-lucide="play" class="w-6 h-6 fill-current ml-0.5"></i>
-        </button>
-        <button onclick="nextTrack()" class="text-slate-400 hover:text-white transition">
-          <i data-lucide="skip-forward" class="w-6 h-6"></i>
-        </button>
+      <!-- Progress Bar -->
+      <div class="flex items-center gap-3 text-xs text-slate-400">
+        <span id="current-time">0:00</span>
+        <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="seekAudio()" class="w-full">
+        <span id="duration-time">0:00</span>
+      </div>
+
+      <!-- Playback Mode, Navigation & Volume Controls -->
+      <div class="flex flex-col gap-3 pt-1">
+        <div class="flex justify-between items-center px-2">
+          <!-- Shuffle Button -->
+          <button id="shuffle-btn" onclick="toggleShuffle()" class="text-slate-400 hover:text-white transition" title="Acak Playlist">
+            <i data-lucide="shuffle" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Main Nav Buttons -->
+          <div class="flex items-center gap-5">
+            <button onclick="prevTrack()" class="text-slate-400 hover:text-white transition">
+              <i data-lucide="skip-back" class="w-6 h-6"></i>
+            </button>
+            <button id="play-btn" onclick="togglePlay()" class="w-12 h-12 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center transition shadow-lg shadow-indigo-600/40">
+              <i data-lucide="play" class="w-6 h-6 fill-current ml-0.5"></i>
+            </button>
+            <button onclick="nextTrack()" class="text-slate-400 hover:text-white transition">
+              <i data-lucide="skip-forward" class="w-6 h-6"></i>
+            </button>
+          </div>
+
+          <!-- Repeat Button -->
+          <button id="repeat-btn" onclick="toggleRepeat()" class="text-slate-400 hover:text-white transition" title="Ulangi Lagu">
+            <i data-lucide="repeat" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Volume Control -->
+        <div class="flex items-center gap-3 bg-[#0e1322] px-3 py-2 rounded-xl border border-slate-800/80 mt-2">
+          <i data-lucide="volume-2" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
+          <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="1" oninput="adjustVolume()" class="w-full">
+        </div>
       </div>
     </div>
 
@@ -127,6 +155,10 @@
     let accessToken = null;
     let playlist = [];
     let currentTrackIndex = -1;
+
+    // Playback Modes
+    let isShuffle = false;
+    let isRepeat = false;
 
     // WEB AUDIO API FOR EQUALIZER
     let audioCtx, trackSource, bassFilter, vokalFilter;
@@ -313,8 +345,13 @@
 
     function nextTrack() {
       if (playlist.length === 0) return;
-      const next = (currentTrackIndex + 1) % playlist.length;
-      playTrack(next);
+      if (isShuffle) {
+        let randomIndex = Math.floor(Math.random() * playlist.length);
+        playTrack(randomIndex);
+      } else {
+        const next = (currentTrackIndex + 1) % playlist.length;
+        playTrack(next);
+      }
     }
 
     function prevTrack() {
@@ -323,7 +360,55 @@
       playTrack(prev);
     }
 
-    audioPlayer.onended = () => nextTrack();
+    // FITUR ATUR VOLUME, SHUFFLE, & REPEAT
+    function adjustVolume() {
+      audioPlayer.volume = document.getElementById('volume-bar').value;
+    }
+
+    function toggleShuffle() {
+      isShuffle = !isShuffle;
+      const btn = document.getElementById('shuffle-btn');
+      btn.className = isShuffle 
+        ? 'text-indigo-400 font-bold transition' 
+        : 'text-slate-400 hover:text-white transition';
+    }
+
+    function toggleRepeat() {
+      isRepeat = !isRepeat;
+      const btn = document.getElementById('repeat-btn');
+      btn.className = isRepeat 
+        ? 'text-indigo-400 font-bold transition' 
+        : 'text-slate-400 hover:text-white transition';
+    }
+
+    // PROGRESS BAR & TIMER MANAGEMENT
+    audioPlayer.ontimeupdate = () => {
+      if (!isNaN(audioPlayer.duration)) {
+        const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        document.getElementById('seek-bar').value = percent;
+        document.getElementById('current-time').innerText = formatTime(audioPlayer.currentTime);
+        document.getElementById('duration-time').innerText = formatTime(audioPlayer.duration);
+      }
+    };
+
+    function seekAudio() {
+      const seekTo = (document.getElementById('seek-bar').value / 100) * audioPlayer.duration;
+      audioPlayer.currentTime = seekTo;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    audioPlayer.onended = () => {
+      if (isRepeat) {
+        playTrack(currentTrackIndex);
+      } else {
+        nextTrack();
+      }
+    };
   </script>
 
 </body>
