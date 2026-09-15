@@ -96,13 +96,10 @@
 
         <!-- Tuas Pemutar Lagu (Tonearm) -->
         <div id="tonearm" class="tonearm tonearm-idle absolute top-4 right-8 w-12 h-44 pointer-events-none z-10">
-          <!-- Base / Engsel Tuas -->
           <div class="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-500 shadow-md flex items-center justify-center">
             <div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-600"></div>
           </div>
-          <!-- Batang Metalik Tuas -->
           <div class="w-2 h-28 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full ml-[21px] -mt-2 shadow-lg"></div>
-          <!-- Headshell & Jarum (Cartridge) -->
           <div class="w-4 h-8 bg-slate-900 border border-slate-600 rounded-sm ml-[17px] -mt-1 shadow-md transform -rotate-12"></div>
         </div>
 
@@ -127,15 +124,13 @@
         <span id="duration-time">0:00</span>
       </div>
 
-      <!-- Playback Mode, Navigation & Volume Controls -->
+      <!-- Playback Controls -->
       <div class="flex flex-col gap-3 pt-1">
         <div class="flex justify-between items-center px-2">
-          <!-- Shuffle Button -->
           <button id="shuffle-btn" onclick="toggleShuffle()" class="text-slate-400 hover:text-white transition" title="Acak Playlist">
             <i data-lucide="shuffle" class="w-5 h-5"></i>
           </button>
 
-          <!-- Main Nav Buttons -->
           <div class="flex items-center gap-5">
             <button onclick="prevTrack()" class="text-slate-400 hover:text-white transition">
               <i data-lucide="skip-back" class="w-6 h-6"></i>
@@ -148,13 +143,11 @@
             </button>
           </div>
 
-          <!-- Repeat Button -->
           <button id="repeat-btn" onclick="toggleRepeat()" class="text-slate-400 hover:text-white transition" title="Ulangi Lagu">
             <i data-lucide="repeat" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <!-- Volume Control -->
         <div class="flex items-center gap-3 bg-[#0e1322] px-3 py-2 rounded-xl border border-slate-800/80 mt-1">
           <i data-lucide="volume-2" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
           <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="1" oninput="adjustVolume()" class="w-full">
@@ -166,29 +159,27 @@
     <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2 font-bold text-lg text-slate-100">
-          <i data-lucide="sliders" class="text-indigo-400"></i> Equalizer Controls
+          <i data-lucide="sliders" class="text-indigo-400"></i> Equalizer
         </div>
         <button onclick="resetEQ()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
         </button>
       </div>
 
-      <!-- Bass Slider -->
       <div class="bg-[#0e1322] p-3.5 rounded-xl border border-slate-800/80">
         <div class="flex justify-between text-sm mb-2">
           <span class="flex items-center gap-2 font-medium text-emerald-400">
-            <i data-lucide="speaker" class="w-4 h-4"></i> Bass (Low EQ)
+            <i data-lucide="speaker" class="w-4 h-4"></i> Bass
           </span>
           <span id="bass-val" class="font-bold text-emerald-400">0 dB</span>
         </div>
         <input type="range" id="bass" min="-12" max="12" value="0" oninput="updateEQ()" class="w-full">
       </div>
 
-      <!-- Vokal Slider -->
       <div class="bg-[#0e1322] p-3.5 rounded-xl border border-slate-800/80">
         <div class="flex justify-between text-sm mb-2">
           <span class="flex items-center gap-2 font-medium text-pink-400">
-            <i data-lucide="mic" class="w-4 h-4"></i> Vokal (Mid EQ)
+            <i data-lucide="mic" class="w-4 h-4"></i> Vokal
           </span>
           <span id="vokal-val" class="font-bold text-pink-400">0 dB</span>
         </div>
@@ -205,18 +196,19 @@
         <span id="track-count" class="bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-xs px-2.5 py-1 rounded-full font-medium">0 Lagu</span>
       </div>
 
-      <!-- ACTION BUTTONS: TAMBAH LAGU LOKAL & BUAT ALBUM -->
+      <!-- ACTION BUTTONS: UPLOAD KE GOOGLE DRIVE & BUAT ALBUM -->
       <div class="flex flex-col gap-2">
-        <div class="flex gap-2">
-          <!-- Input File Tersembunyi -->
-          <input type="file" id="local-file-input" accept="audio/*" multiple class="hidden" onchange="handleLocalFiles(event)">
-          <!-- Tombol Tambah Lagu -->
-          <button onclick="document.getElementById('local-file-input').click()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Lagu Dari HP / Komputer
+        <div class="flex flex-col gap-1">
+          <input type="file" id="local-file-input" accept="audio/*" multiple class="hidden" onchange="uploadToGoogleDrive(event)">
+          <button onclick="triggerUpload()" id="upload-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
+            <i data-lucide="upload-cloud" class="w-4 h-4"></i> Tambah Lagu & Simpan Ke Drive
           </button>
+          <!-- Progress Bar Upload -->
+          <div id="upload-status" class="hidden text-xs text-indigo-300 text-center py-1 bg-[#0e1322] rounded-lg border border-slate-800 animate-pulse">
+            Mengunggah lagu ke Google Drive...
+          </div>
         </div>
 
-        <!-- Form Buat Album Baru -->
         <div class="flex gap-2">
           <input type="text" id="album-input" placeholder="Nama Album Baru..." class="flex-grow bg-[#0e1322] text-sm px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-200">
           <button onclick="createAlbum()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1 flex-shrink-0">
@@ -225,25 +217,23 @@
         </div>
       </div>
 
-      <!-- Filter Kategori Album -->
       <div class="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none" id="album-tabs">
         <button onclick="filterAlbum('Semua')" class="album-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0">
           Semua
         </button>
       </div>
 
-      <!-- Playlist Container -->
       <div id="playlist-container" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-        <div class="text-slate-400 text-sm text-center py-6">Belum ada lagu. Klik "Tambah Lagu" untuk memasukkan file audio.</div>
+        <div class="text-slate-400 text-sm text-center py-6">Silakan "Sync Google Drive" untuk melihat atau mengunggah lagu.</div>
       </div>
     </div>
 
   </div>
 
   <script>
-    // GOOGLE OAUTH CONFIGURATION
     const CLIENT_ID = '524216548694-b7dsledl0lvtrhpbhgp2dkbpgn0ro6hn.apps.googleusercontent.com';
-    const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+    // IZIN DIAKSES: Diperbarui ke drive.file agar aplikasi BISA UPLOAD file ke Google Drive
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
 
     let tokenClient;
     let accessToken = null;
@@ -252,11 +242,9 @@
     let currentAlbum = 'Semua';
     let currentTrackIndex = -1;
 
-    // Playback Modes
     let isShuffle = false;
     let isRepeat = false;
 
-    // WEB AUDIO API FOR EQUALIZER & VISUALIZER
     let audioCtx, trackSource, bassFilter, vokalFilter, analyser;
     const audioPlayer = document.getElementById('audio-player');
     const canvas = document.getElementById('visualizer');
@@ -340,7 +328,6 @@
       updateEQ();
     }
 
-    // INITIALIZATION & LOCAL STORAGE MANAGEMENT
     window.onload = () => {
       lucide.createIcons();
 
@@ -366,28 +353,57 @@
       if (savedToken) {
         accessToken = savedToken;
         onLoginSuccess();
-      } else {
-        renderPlaylist();
       }
     };
 
-    // HANDLER PENAMBAHAN LAGU DARI HP / PERANGKAT LOKAL
-    function handleLocalFiles(event) {
+    function triggerUpload() {
+      if (!accessToken) {
+        alert('Silakan login / "Sync Google Drive" terlebih dahulu!');
+        handleAuthClick();
+        return;
+      }
+      document.getElementById('local-file-input').click();
+    }
+
+    // FUNGSI UNTUK MENGUNGGAH LAGU KE GOOGLE DRIVE
+    async function uploadToGoogleDrive(event) {
       const files = event.target.files;
       if (!files.length) return;
 
+      const statusEl = document.getElementById('upload-status');
+      statusEl.classList.remove('hidden');
+
       for (let file of files) {
-        const fileObj = {
-          id: 'local-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+        statusEl.innerText = `Mengunggah ${file.name} ke Google Drive...`;
+
+        const metadata = {
           name: file.name,
-          album: 'Semua',
-          type: 'local',
-          url: URL.createObjectURL(file)
+          mimeType: file.type || 'audio/mpeg',
         };
-        playlist.push(fileObj);
+
+        const formData = new FormData();
+        formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        formData.append('file', file);
+
+        try {
+          const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: formData,
+          });
+
+          if (!res.ok) throw new Error('Gagal upload file');
+        } catch (err) {
+          console.error(err);
+          alert(`Gagal mengunggah ${file.name}`);
+        }
       }
-      renderPlaylist();
-      event.target.value = ''; // Reset input file
+
+      statusEl.classList.add('hidden');
+      event.target.value = '';
+      fetchDriveFiles(); // Refresh daftar lagu dari Google Drive
     }
 
     function handleAuthClick() {
@@ -408,7 +424,6 @@
       fetchDriveFiles();
     }
 
-    // AMBIL DAFTAR LAGU DARI GOOGLE DRIVE
     async function fetchDriveFiles() {
       try {
         const res = await fetch(
@@ -427,8 +442,7 @@
         const deletedIds = JSON.parse(localStorage.getItem('deleted_tracks') || '[]');
         const albumAssignments = JSON.parse(localStorage.getItem('album_assignments') || '{}');
 
-        // Gabungkan lagu drive dengan lagu lokal yang sudah di-upload sebelumnya jika ada
-        const driveTracks = files
+        playlist = files
           .filter(file => !deletedIds.includes(file.id))
           .map(file => ({
             ...file,
@@ -436,17 +450,12 @@
             album: albumAssignments[file.id] || 'Semua'
           }));
 
-        // Memastikan tidak terduplikasi
-        const localTracks = playlist.filter(t => t.type === 'local');
-        playlist = [...localTracks, ...driveTracks];
-
         renderPlaylist();
       } catch (err) {
         console.error('Gagal mengambil playlist dari Drive:', err);
       }
     }
 
-    // MANAJEMEN ALBUM
     function createAlbum() {
       const nameInput = document.getElementById('album-input');
       const name = nameInput.value.trim();
@@ -494,10 +503,9 @@
       renderPlaylist();
     }
 
-    // MANAJEMEN HAPUS LAGU
     function removeTrack(trackId, event) {
       event.stopPropagation();
-      if (confirm('Apakah Anda yakin ingin menghapus lagu ini dari playlist?')) {
+      if (confirm('Apakah Anda yakin ingin menyembunyikan lagu ini dari playlist?')) {
         const deletedIds = JSON.parse(localStorage.getItem('deleted_tracks') || '[]');
         deletedIds.push(trackId);
         localStorage.setItem('deleted_tracks', JSON.stringify(deletedIds));
@@ -518,7 +526,7 @@
       document.getElementById('track-count').innerText = `${filteredList.length} Lagu`;
 
       if (filteredList.length === 0) {
-        container.innerHTML = '<div class="text-slate-400 text-sm text-center py-6">Tidak ada lagu di album ini.</div>';
+        container.innerHTML = '<div class="text-slate-400 text-sm text-center py-6">Tidak ada lagu. Klik tombol hijau untuk mengunggah lagu ke Drive.</div>';
         return;
       }
 
@@ -549,7 +557,7 @@
             <select onchange="assignAlbum('${file.id}', this.value)" class="bg-[#151c2e] text-slate-400 border border-slate-700 text-xs rounded-md px-1.5 py-1 focus:outline-none">
               ${albumOptions}
             </select>
-            <button onclick="removeTrack('${file.id}', event)" class="text-slate-500 hover:text-red-400 p-1 transition" title="Hapus Lagu">
+            <button onclick="removeTrack('${file.id}', event)" class="text-slate-500 hover:text-red-400 p-1 transition" title="Sembunyikan">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -559,7 +567,6 @@
       lucide.createIcons();
     }
 
-    // MEMUTAR AUDIO (DARI LOCAL / DRIVE)
     async function playTrack(index) {
       initAudioContext();
       if (audioCtx.state === 'suspended') {
@@ -571,27 +578,21 @@
       document.getElementById('current-title').innerText = file.name;
       renderPlaylist();
 
-      if (file.type === 'local') {
-        audioPlayer.src = file.url;
+      try {
+        const res = await fetch(
+          `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+
+        if (!res.ok) throw new Error('File gagal dimuat');
+
+        const blob = await res.blob();
+        audioPlayer.src = URL.createObjectURL(blob);
         audioPlayer.play();
         updatePlayButton(true);
-      } else {
-        try {
-          const res = await fetch(
-            `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-
-          if (!res.ok) throw new Error('File gagal dimuat');
-
-          const blob = await res.blob();
-          audioPlayer.src = URL.createObjectURL(blob);
-          audioPlayer.play();
-          updatePlayButton(true);
-        } catch (err) {
-          alert('Gagal memutar audio Drive. Coba login / sync ulang.');
-          console.error(err);
-        }
+      } catch (err) {
+        alert('Gagal memutar lagu dari Drive. Coba re-sync Google Drive.');
+        console.error(err);
       }
     }
 
@@ -642,7 +643,6 @@
       playTrack(prev);
     }
 
-    // FITUR ATUR VOLUME, SHUFFLE, & REPEAT
     function adjustVolume() {
       audioPlayer.volume = document.getElementById('volume-bar').value;
     }
@@ -663,7 +663,6 @@
         : 'text-slate-400 hover:text-white transition';
     }
 
-    // PROGRESS BAR & TIMER MANAGEMENT
     audioPlayer.ontimeupdate = () => {
       if (!isNaN(audioPlayer.duration)) {
         const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
