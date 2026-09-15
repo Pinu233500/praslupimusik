@@ -3,17 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrasLupi Musik - Vinyl Player</title>
+  <title>PrasLupi Musik - Cloud Sync</title>
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Google OAuth Client -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* Custom Slider Styling */
     input[type=range] {
       -webkit-appearance: none;
       background: #1e293b;
@@ -29,8 +25,6 @@
       cursor: pointer;
       box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
     }
-
-    /* Animasi Putar Piringan Hitam */
     @keyframes spin-vinyl {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
@@ -38,32 +32,15 @@
     .animate-spin-vinyl {
       animation: spin-vinyl 4s linear infinite;
     }
-
-    /* Efek Alur Grooves Piringan Hitam */
     .vinyl-grooves {
-      background: radial-gradient(circle, 
-        #111 18%, 
-        #222 20%, 
-        #111 25%, 
-        #2a2a2a 35%, 
-        #111 40%, 
-        #222 55%, 
-        #111 60%, 
-        #222 70%
-      );
+      background: radial-gradient(circle, #111 18%, #222 20%, #111 25%, #2a2a2a 35%, #111 40%, #222 55%, #111 60%, #222 70%);
     }
-
-    /* Animasi Tuas Pemutar Lagu (Tonearm) */
     .tonearm {
       transform-origin: 24px 24px;
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .tonearm-playing {
-      transform: rotate(26deg);
-    }
-    .tonearm-idle {
-      transform: rotate(0deg);
-    }
+    .tonearm-playing { transform: rotate(26deg); }
+    .tonearm-idle { transform: rotate(0deg); }
   </style>
 </head>
 <body class="bg-[#0b0f19] text-white min-h-screen flex justify-center p-4 sm:p-6 font-sans">
@@ -80,21 +57,14 @@
       </button>
     </div>
 
-    <!-- AUDIO PLAYER & VINYL TURNTABLE -->
+    <!-- PLAYER SECTION -->
     <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
-      
-      <!-- Turntable Deck -->
       <div class="relative bg-[#0e1322] border border-slate-800 p-6 rounded-2xl flex items-center justify-center overflow-hidden shadow-inner h-64">
-        
-        <!-- Piringan Hitam (Vinyl Record) -->
         <div id="vinyl-disc" class="w-48 h-48 rounded-full vinyl-grooves border-4 border-slate-900 shadow-2xl flex items-center justify-center relative transition-transform">
-          <!-- Label Tengah Piringan -->
           <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-700 to-pink-600 border-2 border-slate-900 flex items-center justify-center shadow-md">
             <div class="w-4 h-4 rounded-full bg-[#0b0f19] border border-slate-700"></div>
           </div>
         </div>
-
-        <!-- Tuas Pemutar Lagu (Tonearm) -->
         <div id="tonearm" class="tonearm tonearm-idle absolute top-4 right-8 w-12 h-44 pointer-events-none z-10">
           <div class="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-500 shadow-md flex items-center justify-center">
             <div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-600"></div>
@@ -102,35 +72,29 @@
           <div class="w-2 h-28 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full ml-[21px] -mt-2 shadow-lg"></div>
           <div class="w-4 h-8 bg-slate-900 border border-slate-600 rounded-sm ml-[17px] -mt-1 shadow-md transform -rotate-12"></div>
         </div>
-
       </div>
 
-      <!-- Judul Lagu -->
       <div id="current-title" class="text-center font-semibold text-slate-200 text-sm truncate px-2">
         Tidak ada lagu dipilih
       </div>
 
-      <!-- Visualizer Spektrum Audio Naik-Turun -->
       <div class="w-full bg-[#0e1322] p-2.5 rounded-xl border border-slate-800/80 flex justify-center items-center">
         <canvas id="visualizer" class="w-full h-10 rounded"></canvas>
       </div>
 
       <audio id="audio-player" crossorigin="anonymous"></audio>
 
-      <!-- Progress Bar -->
       <div class="flex items-center gap-3 text-xs text-slate-400">
         <span id="current-time">0:00</span>
         <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="seekAudio()" class="w-full">
         <span id="duration-time">0:00</span>
       </div>
 
-      <!-- Playback Controls -->
       <div class="flex flex-col gap-3 pt-1">
         <div class="flex justify-between items-center px-2">
-          <button id="shuffle-btn" onclick="toggleShuffle()" class="text-slate-400 hover:text-white transition" title="Acak Playlist">
+          <button id="shuffle-btn" onclick="toggleShuffle()" class="text-slate-400 hover:text-white transition" title="Acak">
             <i data-lucide="shuffle" class="w-5 h-5"></i>
           </button>
-
           <div class="flex items-center gap-5">
             <button onclick="prevTrack()" class="text-slate-400 hover:text-white transition">
               <i data-lucide="skip-back" class="w-6 h-6"></i>
@@ -142,12 +106,10 @@
               <i data-lucide="skip-forward" class="w-6 h-6"></i>
             </button>
           </div>
-
-          <button id="repeat-btn" onclick="toggleRepeat()" class="text-slate-400 hover:text-white transition" title="Ulangi Lagu">
+          <button id="repeat-btn" onclick="toggleRepeat()" class="text-slate-400 hover:text-white transition" title="Ulangi">
             <i data-lucide="repeat" class="w-5 h-5"></i>
           </button>
         </div>
-
         <div class="flex items-center gap-3 bg-[#0e1322] px-3 py-2 rounded-xl border border-slate-800/80 mt-1">
           <i data-lucide="volume-2" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
           <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="1" oninput="adjustVolume()" class="w-full">
@@ -187,7 +149,7 @@
       </div>
     </div>
 
-    <!-- ALBUM & PLAYLIST SECTION -->
+    <!-- PLAYLIST & ALBUM SECTION -->
     <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2 font-bold text-lg">
@@ -196,35 +158,29 @@
         <span id="track-count" class="bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-xs px-2.5 py-1 rounded-full font-medium">0 Lagu</span>
       </div>
 
-      <!-- ACTION BUTTONS: UPLOAD KE GOOGLE DRIVE & BUAT ALBUM -->
       <div class="flex flex-col gap-2">
-        <div class="flex flex-col gap-1">
-          <input type="file" id="local-file-input" accept="audio/*" multiple class="hidden" onchange="uploadToGoogleDrive(event)">
-          <button onclick="triggerUpload()" id="upload-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
-            <i data-lucide="upload-cloud" class="w-4 h-4"></i> Tambah Lagu & Simpan Ke Drive
-          </button>
-          <!-- Progress Bar Upload -->
-          <div id="upload-status" class="hidden text-xs text-indigo-300 text-center py-1 bg-[#0e1322] rounded-lg border border-slate-800 animate-pulse">
-            Mengunggah lagu ke Google Drive...
-          </div>
+        <input type="file" id="local-file-input" accept="audio/*" multiple class="hidden" onchange="uploadToGoogleDrive(event)">
+        <button onclick="triggerUpload()" id="upload-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Tambah Lagu ke Album Ini
+        </button>
+        <div id="upload-status" class="hidden text-xs text-indigo-300 text-center py-1 bg-[#0e1322] rounded-lg border border-slate-800 animate-pulse">
+          Proses unggah lagu ke Google Drive...
         </div>
 
         <div class="flex gap-2">
-          <input type="text" id="album-input" placeholder="Nama Album Baru..." class="flex-grow bg-[#0e1322] text-sm px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-200">
-          <button onclick="createAlbum()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1 flex-shrink-0">
+          <input type="text" id="album-input" placeholder="Nama Album Baru (Folder Drive)..." class="flex-grow bg-[#0e1322] text-sm px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-200">
+          <button onclick="createAlbumFolder()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1 flex-shrink-0">
             <i data-lucide="folder-plus" class="w-4 h-4"></i> Buat Album
           </button>
         </div>
       </div>
 
       <div class="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none" id="album-tabs">
-        <button onclick="filterAlbum('Semua')" class="album-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0">
-          Semua
-        </button>
+        <button class="album-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0">Semua</button>
       </div>
 
       <div id="playlist-container" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-        <div class="text-slate-400 text-sm text-center py-6">Silakan "Sync Google Drive" untuk melihat atau mengunggah lagu.</div>
+        <div class="text-slate-400 text-sm text-center py-6">Silakan "Sync Google Drive" untuk memuat lagu & album.</div>
       </div>
     </div>
 
@@ -232,14 +188,14 @@
 
   <script>
     const CLIENT_ID = '524216548694-b7dsledl0lvtrhpbhgp2dkbpgn0ro6hn.apps.googleusercontent.com';
-    // IZIN DIAKSES: Diperbarui ke drive.file agar aplikasi BISA UPLOAD file ke Google Drive
+    // SCOPE LENGKAP: Mengizinkan pembuatan folder dan file di Google Drive
     const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
 
     let tokenClient;
     let accessToken = null;
     let playlist = [];
-    let albums = ['Semua'];
-    let currentAlbum = 'Semua';
+    let driveFolders = [{ id: 'all', name: 'Semua' }];
+    let currentAlbumId = 'all';
     let currentTrackIndex = -1;
 
     let isShuffle = false;
@@ -331,12 +287,6 @@
     window.onload = () => {
       lucide.createIcons();
 
-      const savedAlbums = localStorage.getItem('music_albums');
-      if (savedAlbums) {
-        albums = JSON.parse(savedAlbums);
-      }
-      renderAlbums();
-
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -356,56 +306,6 @@
       }
     };
 
-    function triggerUpload() {
-      if (!accessToken) {
-        alert('Silakan login / "Sync Google Drive" terlebih dahulu!');
-        handleAuthClick();
-        return;
-      }
-      document.getElementById('local-file-input').click();
-    }
-
-    // FUNGSI UNTUK MENGUNGGAH LAGU KE GOOGLE DRIVE
-    async function uploadToGoogleDrive(event) {
-      const files = event.target.files;
-      if (!files.length) return;
-
-      const statusEl = document.getElementById('upload-status');
-      statusEl.classList.remove('hidden');
-
-      for (let file of files) {
-        statusEl.innerText = `Mengunggah ${file.name} ke Google Drive...`;
-
-        const metadata = {
-          name: file.name,
-          mimeType: file.type || 'audio/mpeg',
-        };
-
-        const formData = new FormData();
-        formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        formData.append('file', file);
-
-        try {
-          const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: formData,
-          });
-
-          if (!res.ok) throw new Error('Gagal upload file');
-        } catch (err) {
-          console.error(err);
-          alert(`Gagal mengunggah ${file.name}`);
-        }
-      }
-
-      statusEl.classList.add('hidden');
-      event.target.value = '';
-      fetchDriveFiles(); // Refresh daftar lagu dari Google Drive
-    }
-
     function handleAuthClick() {
       if (!accessToken) {
         tokenClient.requestAccessToken({ prompt: 'consent' });
@@ -421,112 +321,165 @@
     function onLoginSuccess() {
       document.getElementById('login-btn').classList.add('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
-      fetchDriveFiles();
+      syncDriveData();
     }
 
-    async function fetchDriveFiles() {
-      try {
-        const res = await fetch(
-          "https://www.googleapis.com/drive/v3/files?q=mimeType contains 'audio/'&fields=files(id, name)",
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
+    // MEMBUAT FOLDER BARU (ALBUM) DI GOOGLE DRIVE
+    async function createAlbumFolder() {
+      const nameInput = document.getElementById('album-input');
+      const folderName = nameInput.value.trim();
 
-        if (res.status === 401) {
-          handleLogout();
-          return;
+      if (!folderName) {
+        alert('Masukkan nama album terlebih dahulu!');
+        return;
+      }
+      if (!accessToken) {
+        alert('Silakan login Google Drive terlebih dahulu!');
+        return;
+      }
+
+      try {
+        const metadata = {
+          name: folderName,
+          mimeType: 'application/vnd.google-apps.folder'
+        };
+
+        const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(metadata)
+        });
+
+        if (res.ok) {
+          nameInput.value = '';
+          await syncDriveData(); // Refresh album dan folder
+        } else {
+          alert('Gagal membuat folder album di Google Drive.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // MENGUNGGAH LAGU KE FOLDER GOOGLE DRIVE YANG AKTIF
+    function triggerUpload() {
+      if (!accessToken) {
+        alert('Silakan Sync Google Drive terlebih dahulu!');
+        handleAuthClick();
+        return;
+      }
+      document.getElementById('local-file-input').click();
+    }
+
+    async function uploadToGoogleDrive(event) {
+      const files = event.target.files;
+      if (!files.length) return;
+
+      const statusEl = document.getElementById('upload-status');
+      statusEl.classList.remove('hidden');
+
+      for (let file of files) {
+        statusEl.innerText = `Mengunggah ${file.name}...`;
+
+        const metadata = {
+          name: file.name,
+          mimeType: file.type || 'audio/mpeg'
+        };
+
+        // Jika album/folder tertentu dipilih, masukkan file ke folder tersebut
+        if (currentAlbumId !== 'all') {
+          metadata.parents = [currentAlbumId];
         }
 
-        const data = await res.json();
-        const files = data.files || [];
-        
-        const deletedIds = JSON.parse(localStorage.getItem('deleted_tracks') || '[]');
-        const albumAssignments = JSON.parse(localStorage.getItem('album_assignments') || '{}');
+        const formData = new FormData();
+        formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        formData.append('file', file);
 
-        playlist = files
-          .filter(file => !deletedIds.includes(file.id))
-          .map(file => ({
-            ...file,
-            type: 'drive',
-            album: albumAssignments[file.id] || 'Semua'
-          }));
+        try {
+          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}` },
+            body: formData
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      statusEl.classList.add('hidden');
+      event.target.value = '';
+      syncDriveData();
+    }
+
+    // MENGAMBIL FOLDER (ALBUM) DAN LAGU DARI GOOGLE DRIVE
+    async function syncDriveData() {
+      try {
+        // 1. Ambil Folder
+        const folderRes = await fetch(
+          "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id, name)",
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (folderRes.status === 401) { handleLogout(); return; }
+        const folderData = await folderRes.json();
+        
+        driveFolders = [{ id: 'all', name: 'Semua' }, ...(folderData.files || [])];
+        renderAlbumTabs();
+
+        // 2. Ambil File Lagu
+        const fileRes = await fetch(
+          "https://www.googleapis.com/drive/v3/files?q=mimeType contains 'audio/' and trashed=false&fields=files(id, name, parents)",
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const fileData = await fileRes.json();
+
+        playlist = (fileData.files || []).map(file => ({
+          ...file,
+          folderId: file.parents ? file.parents[0] : null
+        }));
 
         renderPlaylist();
       } catch (err) {
-        console.error('Gagal mengambil playlist dari Drive:', err);
+        console.error('Gagal melakukan sinkronisasi dengan Google Drive:', err);
       }
     }
 
-    function createAlbum() {
-      const nameInput = document.getElementById('album-input');
-      const name = nameInput.value.trim();
-      if (!name) return;
-
-      if (!albums.includes(name)) {
-        albums.push(name);
-        localStorage.setItem('music_albums', JSON.stringify(albums));
-        renderAlbums();
-        nameInput.value = '';
-      }
-    }
-
-    function renderAlbums() {
+    function renderAlbumTabs() {
       const container = document.getElementById('album-tabs');
       container.innerHTML = '';
 
-      albums.forEach(album => {
-        const isActive = album === currentAlbum;
+      driveFolders.forEach(folder => {
+        const isActive = folder.id === currentAlbumId;
         const btn = document.createElement('button');
         btn.className = `album-btn text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0 ${
-          isActive 
-            ? 'bg-indigo-600 text-white' 
-            : 'bg-[#0e1322] text-slate-400 hover:text-white border border-slate-800'
+          isActive ? 'bg-indigo-600 text-white' : 'bg-[#0e1322] text-slate-400 hover:text-white border border-slate-800'
         }`;
-        btn.innerText = album;
-        btn.onclick = () => filterAlbum(album);
+        btn.innerText = folder.name;
+        btn.onclick = () => filterByAlbum(folder.id);
         container.appendChild(btn);
       });
     }
 
-    function filterAlbum(album) {
-      currentAlbum = album;
-      renderAlbums();
+    function filterByAlbum(folderId) {
+      currentAlbumId = folderId;
+      renderAlbumTabs();
       renderPlaylist();
-    }
-
-    function assignAlbum(trackId, albumName) {
-      const albumAssignments = JSON.parse(localStorage.getItem('album_assignments') || '{}');
-      albumAssignments[trackId] = albumName;
-      localStorage.setItem('album_assignments', JSON.stringify(albumAssignments));
-
-      const track = playlist.find(t => t.id === trackId);
-      if (track) track.album = albumName;
-      renderPlaylist();
-    }
-
-    function removeTrack(trackId, event) {
-      event.stopPropagation();
-      if (confirm('Apakah Anda yakin ingin menyembunyikan lagu ini dari playlist?')) {
-        const deletedIds = JSON.parse(localStorage.getItem('deleted_tracks') || '[]');
-        deletedIds.push(trackId);
-        localStorage.setItem('deleted_tracks', JSON.stringify(deletedIds));
-
-        playlist = playlist.filter(track => track.id !== trackId);
-        renderPlaylist();
-      }
     }
 
     function renderPlaylist() {
       const container = document.getElementById('playlist-container');
       container.innerHTML = '';
 
-      const filteredList = currentAlbum === 'Semua' 
-        ? playlist 
-        : playlist.filter(item => item.album === currentAlbum);
+      const filteredList = currentAlbumId === 'all'
+        ? playlist
+        : playlist.filter(item => item.folderId === currentAlbumId);
 
       document.getElementById('track-count').innerText = `${filteredList.length} Lagu`;
 
       if (filteredList.length === 0) {
-        container.innerHTML = '<div class="text-slate-400 text-sm text-center py-6">Tidak ada lagu. Klik tombol hijau untuk mengunggah lagu ke Drive.</div>';
+        container.innerHTML = '<div class="text-slate-400 text-sm text-center py-6">Tidak ada lagu di album ini.</div>';
         return;
       }
 
@@ -542,24 +495,12 @@
         }`;
         item.onclick = () => playTrack(originalIndex);
 
-        const albumOptions = albums.map(a => 
-          `<option value="${a}" ${a === file.album ? 'selected' : ''}>${a}</option>`
-        ).join('');
-
         item.innerHTML = `
-          <div class="flex items-center gap-3 overflow-hidden mr-2">
+          <div class="flex items-center gap-3 overflow-hidden">
             <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
               <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5"></i>
             </div>
             <div class="text-sm font-medium truncate">${file.name}</div>
-          </div>
-          <div class="flex items-center gap-2 flex-shrink-0" onclick="event.stopPropagation()">
-            <select onchange="assignAlbum('${file.id}', this.value)" class="bg-[#151c2e] text-slate-400 border border-slate-700 text-xs rounded-md px-1.5 py-1 focus:outline-none">
-              ${albumOptions}
-            </select>
-            <button onclick="removeTrack('${file.id}', event)" class="text-slate-500 hover:text-red-400 p-1 transition" title="Sembunyikan">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
           </div>
         `;
         container.appendChild(item);
@@ -591,7 +532,7 @@
         audioPlayer.play();
         updatePlayButton(true);
       } catch (err) {
-        alert('Gagal memutar lagu dari Drive. Coba re-sync Google Drive.');
+        alert('Gagal memutar lagu dari Drive.');
         console.error(err);
       }
     }
@@ -650,17 +591,13 @@
     function toggleShuffle() {
       isShuffle = !isShuffle;
       const btn = document.getElementById('shuffle-btn');
-      btn.className = isShuffle 
-        ? 'text-indigo-400 font-bold transition' 
-        : 'text-slate-400 hover:text-white transition';
+      btn.className = isShuffle ? 'text-indigo-400 font-bold transition' : 'text-slate-400 hover:text-white transition';
     }
 
     function toggleRepeat() {
       isRepeat = !isRepeat;
       const btn = document.getElementById('repeat-btn');
-      btn.className = isRepeat 
-        ? 'text-indigo-400 font-bold transition' 
-        : 'text-slate-400 hover:text-white transition';
+      btn.className = isRepeat ? 'text-indigo-400 font-bold transition' : 'text-slate-400 hover:text-white transition';
     }
 
     audioPlayer.ontimeupdate = () => {
