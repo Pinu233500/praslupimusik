@@ -188,7 +188,6 @@
 
   <script>
     const CLIENT_ID = '524216548694-b7dsledl0lvtrhpbhgp2dkbpgn0ro6hn.apps.googleusercontent.com';
-    // SCOPE LENGKAP: Mengizinkan pembuatan folder dan file di Google Drive
     const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
 
     let tokenClient;
@@ -324,7 +323,6 @@
       syncDriveData();
     }
 
-    // MEMBUAT FOLDER BARU (ALBUM) DI GOOGLE DRIVE
     async function createAlbumFolder() {
       const nameInput = document.getElementById('album-input');
       const folderName = nameInput.value.trim();
@@ -355,7 +353,7 @@
 
         if (res.ok) {
           nameInput.value = '';
-          await syncDriveData(); // Refresh album dan folder
+          await syncDriveData();
         } else {
           alert('Gagal membuat folder album di Google Drive.');
         }
@@ -364,7 +362,6 @@
       }
     }
 
-    // MENGUNGGAH LAGU KE FOLDER GOOGLE DRIVE YANG AKTIF
     function triggerUpload() {
       if (!accessToken) {
         alert('Silakan Sync Google Drive terlebih dahulu!');
@@ -389,7 +386,6 @@
           mimeType: file.type || 'audio/mpeg'
         };
 
-        // Jika album/folder tertentu dipilih, masukkan file ke folder tersebut
         if (currentAlbumId !== 'all') {
           metadata.parents = [currentAlbumId];
         }
@@ -414,10 +410,8 @@
       syncDriveData();
     }
 
-    // MENGAMBIL FOLDER (ALBUM) DAN LAGU DARI GOOGLE DRIVE
     async function syncDriveData() {
       try {
-        // 1. Ambil Folder
         const folderRes = await fetch(
           "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id, name)",
           { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -428,7 +422,6 @@
         driveFolders = [{ id: 'all', name: 'Semua' }, ...(folderData.files || [])];
         renderAlbumTabs();
 
-        // 2. Ambil File Lagu
         const fileRes = await fetch(
           "https://www.googleapis.com/drive/v3/files?q=mimeType contains 'audio/' and trashed=false&fields=files(id, name, parents)",
           { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -452,14 +445,33 @@
 
       driveFolders.forEach(folder => {
         const isActive = folder.id === currentAlbumId;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-center gap-1 flex-shrink-0';
+
         const btn = document.createElement('button');
-        btn.className = `album-btn text-xs px-3 py-1.5 rounded-lg font-medium transition flex-shrink-0 ${
+        btn.className = `album-btn text-xs px-3 py-1.5 rounded-lg font-medium transition ${
           isActive ? 'bg-indigo-600 text-white' : 'bg-[#0e1322] text-slate-400 hover:text-white border border-slate-800'
         }`;
         btn.innerText = folder.name;
         btn.onclick = () => filterByAlbum(folder.id);
-        container.appendChild(btn);
+        wrapper.appendChild(btn);
+
+        // Menambahkan tombol hapus folder album jika bukan tab 'Semua'
+        if (folder.id !== 'all') {
+          const delBtn = document.createElement('button');
+          delBtn.className = 'text-slate-500 hover:text-red-400 p-1 transition';
+          delBtn.title = 'Hapus Album';
+          delBtn.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i>';
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteFileOrFolder(folder.id, folder.name, true);
+          };
+          wrapper.appendChild(delBtn);
+        }
+
+        container.appendChild(wrapper);
       });
+      lucide.createIcons();
     }
 
     function filterByAlbum(folderId) {
@@ -496,16 +508,53 @@
         item.onclick = () => playTrack(originalIndex);
 
         item.innerHTML = `
-          <div class="flex items-center gap-3 overflow-hidden">
+          <div class="flex items-center gap-3 overflow-hidden mr-2">
             <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
               <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5"></i>
             </div>
             <div class="text-sm font-medium truncate">${file.name}</div>
           </div>
+          <button onclick="event.stopPropagation(); deleteFileOrFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition flex-shrink-0" title="Hapus Lagu">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
         `;
         container.appendChild(item);
       });
       lucide.createIcons();
+    }
+
+    // FUNGSI UNTUK MENGHAPUS FILE / FOLDER DARI GOOGLE DRIVE
+    async function deleteFileOrFolder(id, name, isFolder = false) {
+      const typeStr = isFolder ? 'album' : 'lagu';
+      if (!confirm(`Apakah Anda yakin ingin menghapus ${typeStr} "${name}" dari Google Drive?`)) {
+        return;
+      }
+
+      if (!accessToken) {
+        alert('Silakan login Google Drive terlebih dahulu!');
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://www.googleapis.com/drive/v3/files/${id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+
+        if (res.ok || res.status === 204) {
+          if (isFolder && currentAlbumId === id) {
+            currentAlbumId = 'all';
+          }
+          await syncDriveData();
+        } else {
+          alert(`Gagal menghapus ${typeStr}.`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert(`Terjadi kesalahan saat menghapus ${typeStr}.`);
+      }
     }
 
     async function playTrack(index) {
