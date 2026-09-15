@@ -16,7 +16,7 @@
     /* Custom Slider Styling */
     input[type=range] {
       -webkit-appearance: none;
-      background: #2d3748;
+      background: #1e293b;
       height: 6px;
       border-radius: 5px;
     }
@@ -35,8 +35,8 @@
 
   <div class="w-full max-w-md flex flex-col gap-4">
 
-    <!-- LOGIN / LOGOUT CONTAINER -->
-    <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex justify-center">
+    <!-- AUTH SECTION -->
+    <div class="bg-[#151c2e] p-4 rounded-2xl border border-slate-800 shadow-xl flex justify-center" id="auth-section">
       <button id="login-btn" onclick="handleAuthClick()" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 font-semibold rounded-xl transition duration-200 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
         <i data-lucide="cloud"></i> Login Google Drive
       </button>
@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <!-- GOOGLE DRIVE PLAYLIST -->
+    <!-- PLAYLIST SECTION -->
     <div class="bg-[#151c2e] p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2 font-bold text-lg">
@@ -102,13 +102,6 @@
 
       <audio id="audio-player" crossorigin="anonymous"></audio>
 
-      <!-- Progress Bar -->
-      <div class="flex items-center gap-3 text-xs text-slate-400">
-        <span id="current-time">0:00</span>
-        <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="seekAudio()" class="w-full">
-        <span id="duration-time">0:00</span>
-      </div>
-
       <!-- Navigation & Play Buttons -->
       <div class="flex justify-center items-center gap-6 pt-1">
         <button onclick="prevTrack()" class="text-slate-400 hover:text-white transition">
@@ -126,7 +119,7 @@
   </div>
 
   <script>
-    // MASUKKAN CLIENT ID LENGKAP KAMU DI SINI
+    // GOOGLE OAUTH CONFIGURATION
     const CLIENT_ID = '524216548694-b7dsledl0lvtrhpbhgp2dkbpgn0ro6hn.apps.googleusercontent.com';
     const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
@@ -135,11 +128,10 @@
     let playlist = [];
     let currentTrackIndex = -1;
 
-    // Web Audio API Elements
+    // WEB AUDIO API FOR EQUALIZER
     let audioCtx, trackSource, bassFilter, vokalFilter;
     const audioPlayer = document.getElementById('audio-player');
 
-    // Inisialisasi Audio Context
     function initAudioContext() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -152,6 +144,7 @@
         vokalFilter = audioCtx.createBiquadFilter();
         vokalFilter.type = 'peaking';
         vokalFilter.frequency.value = 1000;
+        vokalFilter.Q.value = 1;
 
         trackSource.connect(bassFilter);
         bassFilter.connect(vokalFilter);
@@ -176,7 +169,7 @@
       updateEQ();
     }
 
-    // Google OAuth & Auto-Login
+    // GOOGLE OAUTH & AUTO-LOGIN MANAGEMENT
     window.onload = () => {
       lucide.createIcons();
 
@@ -217,7 +210,7 @@
       fetchDriveFiles();
     }
 
-    // Fetch Audio Files from Drive
+    // AMBIL DAFTAR LAGU DARI GOOGLE DRIVE
     async function fetchDriveFiles() {
       try {
         const res = await fetch(
@@ -259,7 +252,7 @@
         item.onclick = () => playTrack(index);
 
         item.innerHTML = `
-          <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600' : 'bg-indigo-950'} flex items-center justify-center text-indigo-300 flex-shrink-0">
+          <div class="w-9 h-9 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
             <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-5 h-5"></i>
           </div>
           <div class="text-sm font-medium truncate">${file.name}</div>
@@ -269,7 +262,7 @@
       lucide.createIcons();
     }
 
-    // Audio Playback
+    // MEMUTAR AUDIO DENGAN FETCH BLOB
     async function playTrack(index) {
       initAudioContext();
       if (audioCtx.state === 'suspended') {
@@ -287,14 +280,14 @@
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 
-        if (!res.ok) throw new Error('Gagal memuat audio');
+        if (!res.ok) throw new Error('File gagal dimuat');
 
         const blob = await res.blob();
         audioPlayer.src = URL.createObjectURL(blob);
         audioPlayer.play();
         updatePlayButton(true);
       } catch (err) {
-        alert('Gagal memutar lagu dari Drive.');
+        alert('Gagal memutar audio. Coba login ulang.');
         console.error(err);
       }
     }
@@ -320,36 +313,18 @@
 
     function nextTrack() {
       if (playlist.length === 0) return;
-      playTrack((currentTrackIndex + 1) % playlist.length);
+      const next = (currentTrackIndex + 1) % playlist.length;
+      playTrack(next);
     }
 
     function prevTrack() {
       if (playlist.length === 0) return;
-      playTrack((currentTrackIndex - 1 + playlist.length) % playlist.length);
-    }
-
-    // Audio Progress Management
-    audioPlayer.ontimeupdate = () => {
-      if (!isNaN(audioPlayer.duration)) {
-        const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-        document.getElementById('seek-bar').value = percent;
-        document.getElementById('current-time').innerText = formatTime(audioPlayer.currentTime);
-        document.getElementById('duration-time').innerText = formatTime(audioPlayer.duration);
-      }
-    };
-
-    function seekAudio() {
-      const seekTo = (document.getElementById('seek-bar').value / 100) * audioPlayer.duration;
-      audioPlayer.currentTime = seekTo;
-    }
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      const prev = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      playTrack(prev);
     }
 
     audioPlayer.onended = () => nextTrack();
   </script>
+
 </body>
 </html>
