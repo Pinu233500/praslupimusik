@@ -25,24 +25,45 @@
       cursor: pointer;
       box-shadow: 0 0 6px rgba(129, 140, 248, 0.5);
     }
+
+    /* ANIMASI PERPUTARAN VINYL */
     @keyframes spin-vinyl {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
     .animate-spin-vinyl {
-      animation: spin-vinyl 4s linear infinite;
+      animation: spin-vinyl 3.5s linear infinite;
     }
+
+    /* TEKSTUR & KONTRAS PIRINGAN HITAM */
     .vinyl-grooves {
-      background: radial-gradient(circle, #111 18%, #222 20%, #111 25%, #2a2a2a 35%, #111 40%, #222 55%, #111 60%, #222 70%);
+      background: 
+        radial-gradient(circle, #000 15%, transparent 16%),
+        conic-gradient(from 0deg, rgba(255,255,255,0.08) 0deg, transparent 60deg, rgba(255,255,255,0.12) 120deg, transparent 180deg, rgba(255,255,255,0.08) 240deg, transparent 300deg, rgba(255,255,255,0.12) 360deg),
+        repeating-radial-gradient(circle, #1e2538 0px, #0f1422 3px, #2a334d 5px, #111726 8px);
     }
+
+    /* POSISI & ANIMASI TONEARM (JARUM PEMUTAR) */
+    .tonearm-wrapper {
+      position: absolute;
+      top: 12px;
+      right: 28px;
+      width: 50px;
+      height: 160px;
+      pointer-events: none;
+      z-index: 20;
+    }
+
     .tonearm {
-      transform-origin: 18px 18px;
+      transform-origin: 25px 25px; /* Titik tumpu rotasi di pusat pivot */
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .tonearm-playing { transform: rotate(24deg); }
-    .tonearm-idle { transform: rotate(0deg); }
+
+    /* Sudut rotasi agar jarum menempel tepat di atas piringan */
+    .tonearm-playing { transform: rotate(28deg); }
+    .tonearm-idle { transform: rotate(-10deg); }
     
-    /* Scrollbar halus untuk daftar lagu */
+    /* Scrollbar halus */
     ::-webkit-scrollbar {
       width: 5px;
       height: 5px;
@@ -77,29 +98,40 @@
     </div>
   </header>
 
-  <!-- MAIN CONTAINER (NO SCROLL FIT) -->
+  <!-- MAIN CONTAINER -->
   <main class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-3 flex-grow overflow-hidden min-h-0">
 
-    <!-- LEFT COLUMN: PLAYER & EQUALIZER (5 Cols) -->
+    <!-- LEFT COLUMN: PLAYER & EQUALIZER -->
     <section class="md:col-span-5 flex flex-col gap-3 h-full overflow-hidden">
       
       <!-- PLAYER CARD -->
       <div class="bg-[#151c2e] p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between flex-grow overflow-hidden">
         
-        <!-- VINYL ARTWORK -->
-        <div class="relative bg-[#0e1322] border border-slate-800/80 p-3 rounded-xl flex items-center justify-center overflow-hidden shadow-inner flex-grow min-h-0">
-          <div id="vinyl-disc" class="w-32 h-32 sm:w-40 sm:h-40 rounded-full vinyl-grooves border-4 border-slate-900 shadow-2xl flex items-center justify-center relative transition-transform">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-700 to-pink-600 border-2 border-slate-900 flex items-center justify-center shadow-md">
-              <div class="w-3 h-3 rounded-full bg-[#0b0f19] border border-slate-700"></div>
+        <!-- VINYL ARTWORK CONTAINER -->
+        <div class="relative bg-[#090d16] border border-slate-800/90 p-4 rounded-xl flex items-center justify-center overflow-hidden shadow-inner flex-grow min-h-0">
+          
+          <!-- PIRINGAN HITAM -->
+          <div id="vinyl-disc" class="w-44 h-44 sm:w-52 sm:h-52 rounded-full vinyl-grooves border-4 border-slate-700/80 shadow-[0_0_25px_rgba(0,0,0,0.8)] flex items-center justify-center relative transition-transform">
+            <!-- Stiker Tengah -->
+            <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border-2 border-slate-900 flex items-center justify-center shadow-lg">
+              <div class="w-3.5 h-3.5 rounded-full bg-[#0b0f19] border border-slate-700"></div>
             </div>
           </div>
-          <div id="tonearm" class="tonearm tonearm-idle absolute top-2 right-6 w-10 h-32 pointer-events-none z-10">
-            <div class="w-8 h-8 rounded-full bg-slate-700 border-2 border-slate-500 shadow-md flex items-center justify-center">
-              <div class="w-4 h-4 rounded-full bg-slate-900 border border-slate-600"></div>
+
+          <!-- TONARM / JARUM PEMUTAR -->
+          <div class="tonearm-wrapper">
+            <div id="tonearm" class="tonearm tonearm-idle flex flex-col items-center">
+              <!-- Base Pivot -->
+              <div class="w-10 h-10 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 border-2 border-slate-400 shadow-lg flex items-center justify-center">
+                <div class="w-5 h-5 rounded-full bg-slate-900 border border-slate-600"></div>
+              </div>
+              <!-- Tangkai Jarum -->
+              <div class="w-1.5 h-28 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full -mt-1 shadow-md"></div>
+              <!-- Headshell / Cartridge -->
+              <div class="w-3.5 h-7 bg-slate-900 border border-slate-500 rounded-sm -mt-1 shadow-md transform -rotate-12"></div>
             </div>
-            <div class="w-1.5 h-20 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full ml-[13px] -mt-1 shadow-lg"></div>
-            <div class="w-3 h-6 bg-slate-900 border border-slate-600 rounded-sm ml-[10px] -mt-1 shadow-md transform -rotate-12"></div>
           </div>
+
         </div>
 
         <!-- TRACK INFO & VISUALIZER -->
@@ -151,7 +183,7 @@
 
       </div>
 
-      <!-- EQUALIZER CARD (COMPACT) -->
+      <!-- EQUALIZER CARD -->
       <div class="bg-[#151c2e] p-3 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-2 flex-shrink-0">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-1.5 font-bold text-xs text-slate-200">
@@ -183,7 +215,7 @@
 
     </section>
 
-    <!-- RIGHT COLUMN: PLAYLIST & ALBUM (7 Cols) -->
+    <!-- RIGHT COLUMN: PLAYLIST & ALBUM -->
     <section class="md:col-span-7 bg-[#151c2e] p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-full overflow-hidden">
       
       <!-- HEADER PLAYLIST -->
@@ -220,7 +252,7 @@
         </div>
       </div>
 
-      <!-- PLAYLIST ITEM CONTAINER (FLEX-GROW WITH AUTO SCROLL) -->
+      <!-- PLAYLIST ITEM CONTAINER -->
       <div id="playlist-container" class="flex flex-col gap-1.5 flex-grow overflow-y-auto pr-1 min-h-0">
         <div class="text-slate-400 text-xs text-center py-10">Silakan "Sync Google Drive" untuk memuat lagu & album.</div>
       </div>
@@ -468,7 +500,6 @@
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 
-        // Auto Refresh Token jika kadaluarsa tanpa logout
         if (folderRes.status === 401) {
           tokenClient.requestAccessToken({ prompt: '' });
           return;
