@@ -380,19 +380,22 @@
       }
 
       try {
-        const metadata = {
-          name: folderName,
-          mimeType: 'application/vnd.google-apps.folder'
-        };
-
-        const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+        let res = await fetch('https://www.googleapis.com/drive/v3/files', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(metadata)
+          body: JSON.stringify({
+            name: folderName,
+            mimeType: 'application/vnd.google-apps.folder'
+          })
         });
+
+        if (res.status === 401) {
+          tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
 
         if (res.ok) {
           nameInput.value = '';
@@ -438,11 +441,16 @@
         formData.append('file', file);
 
         try {
-          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          let res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
             method: 'POST',
             headers: { Authorization: `Bearer ${accessToken}` },
             body: formData
           });
+
+          if (res.status === 401) {
+            tokenClient.requestAccessToken({ prompt: '' });
+            break;
+          }
         } catch (err) {
           console.error(err);
         }
@@ -455,20 +463,31 @@
 
     async function syncDriveData() {
       try {
-        const folderRes = await fetch(
+        let folderRes = await fetch(
           "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id, name)",
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
-        if (folderRes.status === 401) { handleLogout(); return; }
+
+        // Auto Refresh Token jika kadaluarsa tanpa logout
+        if (folderRes.status === 401) {
+          tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
+
         const folderData = await folderRes.json();
-        
         driveFolders = [{ id: 'all', name: 'Semua' }, ...(folderData.files || [])];
         renderAlbumTabs();
 
-        const fileRes = await fetch(
+        let fileRes = await fetch(
           "https://www.googleapis.com/drive/v3/files?q=mimeType contains 'audio/' and trashed=false&fields=files(id, name, parents)",
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
+
+        if (fileRes.status === 401) {
+          tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
+
         const fileData = await fileRes.json();
 
         playlist = (fileData.files || []).map(file => ({
@@ -584,6 +603,11 @@
           }
         });
 
+        if (res.status === 401) {
+          tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
+
         if (res.ok || res.status === 204) {
           if (isFolder && currentAlbumId === id) {
             currentAlbumId = 'all';
@@ -614,6 +638,11 @@
           `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
+
+        if (res.status === 401) {
+          tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
 
         if (!res.ok) throw new Error('File gagal dimuat');
 
