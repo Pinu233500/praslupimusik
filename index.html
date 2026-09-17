@@ -574,14 +574,37 @@
       renderPlaylist();
     }
 
-    /* PENGATURAN LOGIKA PINDAH FOLDER GOOGLE DRIVE */
-    async function moveFileToFolder(fileId, targetFolderId, currentFolderId) {
+    /* MENAMPILKAN DROPDOWN DAN TOMBOL SAVE */
+    function showMoveDropdown(fileId) {
+      const btn = document.getElementById(`move-btn-${fileId}`);
+      const moveBox = document.getElementById(`move-box-${fileId}`);
+      if (btn && moveBox) {
+        btn.classList.add('hidden');
+        moveBox.classList.remove('hidden');
+        moveBox.classList.add('flex');
+      }
+    }
+
+    /* FUNGSI EKSEKUSI PEMINDAHAN KE GOOGLE DRIVE SAAT KLIK SAVE */
+    async function saveMoveFile(fileId, currentFolderId) {
       if (!accessToken) {
         alert('Silakan login Google Drive terlebih dahulu!');
         return;
       }
 
-      if (targetFolderId === currentFolderId) return;
+      const select = document.getElementById(`move-select-${fileId}`);
+      const targetFolderId = select ? select.value : currentFolderId;
+
+      if (targetFolderId === currentFolderId) {
+        renderPlaylist();
+        return;
+      }
+
+      const saveBtn = document.getElementById(`save-btn-${fileId}`);
+      if (saveBtn) {
+        saveBtn.innerText = '...';
+        saveBtn.disabled = true;
+      }
 
       try {
         let addParents = '';
@@ -614,10 +637,12 @@
           await syncDriveData();
         } else {
           alert('Gagal memindahkan lagu di Google Drive.');
+          renderPlaylist();
         }
       } catch (err) {
         console.error('Error moving file:', err);
         alert('Terjadi kesalahan saat memindahkan file.');
+        renderPlaylist();
       }
     }
 
@@ -660,10 +685,20 @@
           </div>
 
           <div class="flex items-center gap-1.5 flex-shrink-0" onclick="event.stopPropagation()">
-            <!-- Dropdown Pindah Album -->
-            <select onchange="moveFileToFolder('${file.id}', this.value, '${file.folderId}')" class="bg-[#151c2e] text-[10px] text-slate-300 border border-slate-700 rounded px-1.5 py-1 focus:outline-none max-w-[90px] sm:max-w-none">
-              ${folderOptions}
-            </select>
+            <!-- Tombol Awal Pindah -->
+            <button id="move-btn-${file.id}" onclick="showMoveDropdown('${file.id}')" class="bg-[#151c2e] hover:bg-indigo-900/50 text-slate-300 border border-slate-700 hover:border-indigo-500 text-[10px] px-2 py-1 rounded-lg transition flex items-center gap-1">
+              <i data-lucide="folder-output" class="w-3 h-3 text-indigo-400"></i> Pindah
+            </button>
+
+            <!-- Container Dropdown & Tombol Save (Awalnya Sembunyi) -->
+            <div id="move-box-${file.id}" class="hidden items-center gap-1">
+              <select id="move-select-${file.id}" class="bg-[#151c2e] text-[10px] text-slate-200 border border-indigo-500 rounded px-1.5 py-1 focus:outline-none">
+                ${folderOptions}
+              </select>
+              <button id="save-btn-${file.id}" onclick="saveMoveFile('${file.id}', '${file.folderId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[10px] px-2 py-1 rounded transition flex items-center gap-0.5">
+                <i data-lucide="check" class="w-3 h-3"></i> Save
+              </button>
+            </div>
 
             <!-- Tombol Hapus -->
             <button onclick="deleteFileOrFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Hapus Lagu">
@@ -714,7 +749,6 @@
       }
     }
 
-    /* PERBAIKAN FUNGSI PEMUTARAN AUDIO */
     async function playTrack(index) {
       initAudioContext();
       if (audioCtx.state === 'suspended') {
