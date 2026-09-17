@@ -574,6 +574,53 @@
       renderPlaylist();
     }
 
+    /* PENGATURAN LOGIKA PINDAH FOLDER GOOGLE DRIVE */
+    async function moveFileToFolder(fileId, targetFolderId, currentFolderId) {
+      if (!accessToken) {
+        alert('Silakan login Google Drive terlebih dahulu!');
+        return;
+      }
+
+      if (targetFolderId === currentFolderId) return;
+
+      try {
+        let addParents = '';
+        let removeParents = '';
+
+        if (targetFolderId !== 'all') {
+          addParents = `&addParents=${targetFolderId}`;
+        }
+        if (currentFolderId && currentFolderId !== 'all') {
+          removeParents = `&removeParents=${currentFolderId}`;
+        }
+
+        const res = await fetch(
+          `https://www.googleapis.com/drive/v3/files/${fileId}?supportsAllDrives=true${addParents}${removeParents}`,
+          {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (res.status === 401) {
+          tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
+
+        if (res.ok) {
+          await syncDriveData();
+        } else {
+          alert('Gagal memindahkan lagu di Google Drive.');
+        }
+      } catch (err) {
+        console.error('Error moving file:', err);
+        alert('Terjadi kesalahan saat memindahkan file.');
+      }
+    }
+
     function renderPlaylist() {
       const container = document.getElementById('playlist-container');
       container.innerHTML = '';
@@ -594,23 +641,35 @@
         const isActive = originalIndex === currentTrackIndex;
 
         const item = document.createElement('div');
-        item.className = `flex items-center justify-between p-2 rounded-xl border cursor-pointer transition ${
+        item.className = `flex items-center justify-between p-2 rounded-xl border transition ${
           isActive 
             ? 'bg-indigo-900/30 border-indigo-500/80 text-indigo-200' 
             : 'bg-[#0e1322] border-slate-800/80 hover:border-slate-700 text-slate-300'
         }`;
-        item.onclick = () => playTrack(originalIndex);
+
+        const folderOptions = driveFolders.map(f => 
+          `<option value="${f.id}" ${file.folderId === f.id || (f.id === 'all' && !file.folderId) ? 'selected' : ''}>${f.name}</option>`
+        ).join('');
 
         item.innerHTML = `
-          <div class="flex items-center gap-2.5 overflow-hidden mr-2">
+          <div class="flex items-center gap-2.5 overflow-hidden mr-2 cursor-pointer flex-grow" onclick="playTrack(${originalIndex})">
             <div class="w-7 h-7 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
               <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-4 h-4"></i>
             </div>
             <div class="text-xs font-medium truncate">${file.name}</div>
           </div>
-          <button onclick="event.stopPropagation(); deleteFileOrFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition flex-shrink-0" title="Hapus Lagu">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>
+
+          <div class="flex items-center gap-1.5 flex-shrink-0" onclick="event.stopPropagation()">
+            <!-- Dropdown Pindah Album -->
+            <select onchange="moveFileToFolder('${file.id}', this.value, '${file.folderId}')" class="bg-[#151c2e] text-[10px] text-slate-300 border border-slate-700 rounded px-1.5 py-1 focus:outline-none max-w-[90px] sm:max-w-none">
+              ${folderOptions}
+            </select>
+
+            <!-- Tombol Hapus -->
+            <button onclick="deleteFileOrFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Hapus Lagu">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         `;
         container.appendChild(item);
       });
@@ -655,6 +714,7 @@
       }
     }
 
+    /* PERBAIKAN FUNGSI PEMUTARAN AUDIO */
     async function playTrack(index) {
       initAudioContext();
       if (audioCtx.state === 'suspended') {
@@ -667,25 +727,41 @@
       renderPlaylist();
 
       try {
-        const res = await fetch(
-          `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
+        const streamUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+
+        const res = await fetch(streamUrl, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
 
         if (res.status === 401) {
           tokenClient.requestAccessToken({ prompt: '' });
           return;
         }
 
-        if (!res.ok) throw new Error('File gagal dimuat');
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
 
         const blob = await res.blob();
-        audioPlayer.src = URL.createObjectURL(blob);
-        audioPlayer.play();
+
+        if (audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioPlayer.src);
+        }
+
+        const audioBlobUrl = URL.createObjectURL(blob);
+        audioPlayer.src = audioBlobUrl;
+
+        await audioPlayer.play();
         updatePlayButton(true);
+
       } catch (err) {
-        alert('Gagal memutar lagu dari Drive.');
-        console.error(err);
+        console.error("Detail Error Playback:", err);
+        try {
+          audioPlayer.src = `https://lh3.googleusercontent.com/d/${file.id}`;
+          await audioPlayer.play();
+          updatePlayButton(true);
+        } catch (fallbackErr) {
+          alert('Gagal memutar lagu dari Drive. Silakan coba klik Sync Drive lagi.');
+          updatePlayButton(false);
+        }
       }
     }
 
