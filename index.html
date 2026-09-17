@@ -43,12 +43,12 @@
         repeating-radial-gradient(circle, #1e2538 0px, #0f1422 3px, #2a334d 5px, #111726 8px);
     }
 
-    /* POSISI & ANIMASI TONEARM */
+    /* POSISI & ANIMASI TONEARM (PERBAIKAN SUTUT & POSISI) */
     .tonearm-wrapper {
       position: absolute;
-      top: 8px;
-      right: 12px;
-      width: 45px;
+      top: 10px;
+      right: 20px;
+      width: 40px;
       height: 140px;
       pointer-events: none;
       z-index: 20;
@@ -57,19 +57,27 @@
     @media (min-width: 640px) {
       .tonearm-wrapper {
         top: 12px;
-        right: 28px;
-        width: 50px;
+        right: 32px;
+        width: 45px;
         height: 160px;
       }
     }
 
     .tonearm {
-      transform-origin: 20px 20px;
+      /* Titik tumpu rotasi berada tepat di pusat lingkaran pangkal (center-x center-y) */
+      transform-origin: 16px 16px;
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .tonearm-playing { transform: rotate(26deg); }
-    .tonearm-idle { transform: rotate(-10deg); }
+    @media (min-width: 640px) {
+      .tonearm {
+        transform-origin: 18px 18px;
+      }
+    }
+
+    /* Rotasi agar menempel pas ke piringan hitam */
+    .tonearm-playing { transform: rotate(36deg); }
+    .tonearm-idle { transform: rotate(0deg); }
     
     /* Scrollbar halus */
     ::-webkit-scrollbar {
@@ -126,14 +134,17 @@
             </div>
           </div>
 
-          <!-- TONEARM / JARUM PEMUTAR -->
+          <!-- TONEARM / JARUM PEMUTAR (STRUKTUR DIPERBAIKI) -->
           <div class="tonearm-wrapper">
             <div id="tonearm" class="tonearm tonearm-idle flex flex-col items-center">
-              <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 border-2 border-slate-400 shadow-lg flex items-center justify-center">
+              <!-- Base/Pangkal -->
+              <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 border-2 border-slate-400 shadow-lg flex items-center justify-center flex-shrink-0">
                 <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-slate-900 border border-slate-600"></div>
               </div>
-              <div class="w-1.5 h-16 sm:h-24 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full -mt-1 shadow-md"></div>
-              <div class="w-2.5 sm:w-3 h-4 sm:h-6 bg-slate-900 border border-slate-500 rounded-sm -mt-1 shadow-md transform -rotate-12"></div>
+              <!-- Batang Tonearm -->
+              <div class="w-1.5 h-20 sm:h-24 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full -mt-1 shadow-md"></div>
+              <!-- Cartridge / Ujung Jarum -->
+              <div class="w-3 sm:w-3.5 h-5 sm:h-6 bg-slate-900 border border-slate-500 rounded-sm -mt-1 shadow-md transform -rotate-12"></div>
             </div>
           </div>
 
@@ -257,7 +268,7 @@
         </div>
       </div>
 
-      <!-- PLAYLIST ITEM CONTAINER (TERUBAH AGAR RESPONSIF DAN DAPAT DI-SCROLL) -->
+      <!-- PLAYLIST ITEM CONTAINER -->
       <div id="playlist-container" class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-y-auto pr-1.5">
         <div class="text-slate-400 text-xs text-center py-8">Silakan "Sync Google Drive" untuk memuat lagu & album.</div>
       </div>
