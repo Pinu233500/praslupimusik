@@ -14,13 +14,13 @@
     input[type=range] {
       -webkit-appearance: none;
       background: #1e293b;
-      height: 6px;
+      height: 5px;
       border-radius: 5px;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 14px;
-      width: 14px;
+      height: 12px;
+      width: 12px;
       border-radius: 50%;
       background: #818cf8;
       cursor: pointer;
@@ -48,19 +48,19 @@
     .tonearm-wrapper {
       position: absolute;
       top: 10px;
-      right: 15px;
-      width: 40px;
-      height: 140px;
+      right: 25px;
+      width: 35px;
+      height: 130px;
       pointer-events: none;
       z-index: 20;
     }
 
     @media (min-width: 640px) {
       .tonearm-wrapper {
-        top: 15px;
-        right: 25px;
-        width: 45px;
-        height: 160px;
+        top: 10px;
+        right: 35px;
+        width: 40px;
+        height: 140px;
       }
     }
 
@@ -69,132 +69,113 @@
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    @media (min-width: 640px) {
-      .tonearm {
-        transform-origin: 18px 18px;
-      }
-    }
-
     .tonearm-playing { transform: rotate(52deg); }
     .tonearm-idle { transform: rotate(0deg); }
     
-    /* Sembunyikan Scrollbar Tab Album */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    /* Hide Scrollbar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Custom Scrollbar Playlist */
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0e1322;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 10px;
-    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #0e1322; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
   </style>
 </head>
-<body class="bg-[#0b0f19] text-white min-h-screen md:h-screen w-full flex flex-col p-3 md:p-5 font-sans overflow-x-hidden md:overflow-hidden">
+<body class="bg-[#0b0f19] text-white min-h-screen w-full flex flex-col p-2 sm:p-4 font-sans overflow-x-hidden">
 
   <!-- HEADER -->
-  <header class="w-full max-w-7xl mx-auto flex justify-between items-center bg-[#151c2e] px-4 py-3 rounded-xl border border-slate-800/80 shadow-lg mb-3 flex-shrink-0">
-    <div class="flex items-center gap-2.5">
-      <i data-lucide="disc-3" class="text-indigo-400 w-6 h-6 animate-spin-slow"></i>
-      <h1 class="font-bold text-base sm:text-lg tracking-wide text-slate-100">PrasLupi <span class="text-indigo-400">Musik</span></h1>
+  <header class="w-full max-w-7xl mx-auto flex justify-between items-center bg-[#151c2e] px-4 py-2 sm:py-2.5 rounded-xl border border-slate-800/80 shadow-lg mb-2.5 flex-shrink-0">
+    <div class="flex items-center gap-2">
+      <i data-lucide="disc-3" class="text-indigo-400 w-5 h-5 animate-spin-slow"></i>
+      <h1 class="font-bold text-sm sm:text-base tracking-wide text-slate-100">PrasLupi <span class="text-indigo-400">Musik</span></h1>
     </div>
     <div id="auth-section">
-      <button id="login-btn" onclick="handleAuthClick()" class="py-1.5 px-3 sm:px-4 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
-        <i data-lucide="cloud" class="w-4 h-4"></i> Sync Drive
+      <button id="login-btn" onclick="handleAuthClick()" class="py-1 px-3 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+        <i data-lucide="cloud" class="w-3.5 h-3.5"></i> Sync Drive
       </button>
-      <button id="logout-btn" onclick="handleLogout()" class="hidden py-1.5 px-3 sm:px-4 bg-red-500 hover:bg-red-600 font-medium rounded-lg text-xs transition flex items-center gap-1.5 shadow-md shadow-red-500/20">
-        <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+      <button id="logout-btn" onclick="handleLogout()" class="hidden py-1 px-3 bg-red-500 hover:bg-red-600 font-medium rounded-lg text-xs transition flex items-center gap-1.5 shadow-md shadow-red-500/20">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
       </button>
     </div>
   </header>
 
   <!-- MAIN CONTAINER -->
-  <main class="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 min-h-0 md:overflow-hidden">
+  <main class="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-3 flex-1 min-h-0">
 
     <!-- LEFT COLUMN: PLAYER & EQUALIZER -->
-    <section class="md:col-span-5 flex flex-col gap-3 h-full min-h-0">
+    <section class="md:col-span-5 flex flex-col gap-2.5">
       
       <!-- PLAYER CARD -->
-      <div class="bg-[#151c2e] p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between flex-1 min-h-0">
+      <div class="bg-[#151c2e] p-3.5 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
         
         <!-- VINYL ARTWORK CONTAINER -->
-        <div class="relative bg-[#090d16] border border-slate-800/90 p-4 rounded-xl flex items-center justify-center overflow-hidden shadow-inner h-48 sm:h-56 md:h-52 lg:h-60 flex-shrink-0">
+        <div class="relative bg-[#090d16] border border-slate-800/90 p-2 rounded-xl flex items-center justify-center overflow-hidden shadow-inner h-36 sm:h-44 md:h-40 lg:h-44 flex-shrink-0">
           
           <!-- PIRINGAN HITAM -->
-          <div id="vinyl-disc" class="w-36 h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48 rounded-full vinyl-grooves border-4 border-slate-700/80 shadow-[0_0_25px_rgba(0,0,0,0.8)] flex items-center justify-center relative transition-transform">
+          <div id="vinyl-disc" class="w-28 h-28 sm:w-36 sm:h-36 lg:w-36 lg:h-36 rounded-full vinyl-grooves border-4 border-slate-700/80 shadow-[0_0_20px_rgba(0,0,0,0.8)] flex items-center justify-center relative transition-transform">
             <!-- Stiker Tengah -->
-            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border-2 border-slate-900 flex items-center justify-center shadow-lg">
-              <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#0b0f19] border border-slate-700"></div>
+            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border-2 border-slate-900 flex items-center justify-center shadow-lg">
+              <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#0b0f19] border border-slate-700"></div>
             </div>
           </div>
 
           <!-- TONEARM -->
           <div class="tonearm-wrapper">
             <div id="tonearm" class="tonearm tonearm-idle flex flex-col items-center">
-              <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 border-2 border-slate-400 shadow-lg flex items-center justify-center flex-shrink-0">
-                <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-slate-900 border border-slate-600"></div>
+              <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 border-2 border-slate-400 shadow-lg flex items-center justify-center flex-shrink-0">
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-600"></div>
               </div>
-              <div class="w-1.5 h-20 sm:h-24 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full -mt-1 shadow-md"></div>
-              <div class="w-3 sm:w-3.5 h-5 sm:h-6 bg-slate-900 border border-slate-500 rounded-sm -mt-1 shadow-md transform -rotate-12"></div>
+              <div class="w-1.5 h-14 sm:h-16 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 rounded-full -mt-1 shadow-md"></div>
+              <div class="w-2.5 h-4 bg-slate-900 border border-slate-500 rounded-sm -mt-1 shadow-md transform -rotate-12"></div>
             </div>
           </div>
 
         </div>
 
         <!-- TRACK INFO & VISUALIZER -->
-        <div class="my-3">
-          <div id="current-title" class="text-center font-semibold text-slate-200 text-xs sm:text-sm truncate px-2 mb-2">
+        <div class="my-2 flex-shrink-0">
+          <div id="current-title" class="text-center font-semibold text-slate-200 text-xs truncate px-2 mb-1">
             Tidak ada lagu dipilih
           </div>
-          <div class="w-full bg-[#0e1322] p-1.5 rounded-lg border border-slate-800 flex justify-center items-center">
-            <canvas id="visualizer" class="w-full h-6 rounded"></canvas>
+          <div class="w-full bg-[#0e1322] p-1 rounded-lg border border-slate-800 flex justify-center items-center">
+            <canvas id="visualizer" class="w-full h-4 rounded"></canvas>
           </div>
         </div>
 
         <audio id="audio-player" crossorigin="anonymous"></audio>
 
         <!-- PROGRESS BAR -->
-        <div class="flex items-center gap-2 text-[11px] text-slate-400 mb-2">
+        <div class="flex items-center gap-2 text-[10px] text-slate-400 mb-1.5 flex-shrink-0">
           <span id="current-time">0:00</span>
           <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="seekAudio()" class="w-full cursor-pointer">
           <span id="duration-time">0:00</span>
         </div>
 
         <!-- CONTROLS -->
-        <div class="flex flex-col gap-2.5">
-          <div class="flex justify-between items-center px-3">
+        <div class="flex flex-col gap-1.5 flex-shrink-0">
+          <div class="flex justify-between items-center px-2">
             <button id="shuffle-btn" onclick="toggleShuffle()" class="text-slate-400 hover:text-white transition p-1" title="Acak">
-              <i data-lucide="shuffle" class="w-4 h-4"></i>
+              <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
             </button>
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-4">
               <button onclick="prevTrack()" class="text-slate-400 hover:text-white transition p-1">
-                <i data-lucide="skip-back" class="w-5 h-5"></i>
+                <i data-lucide="skip-back" class="w-4 h-4"></i>
               </button>
-              <button id="play-btn" onclick="togglePlay()" class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center transition shadow-lg shadow-indigo-600/40">
-                <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+              <button id="play-btn" onclick="togglePlay()" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center transition shadow-lg shadow-indigo-600/40">
+                <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i>
               </button>
               <button onclick="nextTrack()" class="text-slate-400 hover:text-white transition p-1">
-                <i data-lucide="skip-forward" class="w-5 h-5"></i>
+                <i data-lucide="skip-forward" class="w-4 h-4"></i>
               </button>
             </div>
             <button id="repeat-btn" onclick="toggleRepeat()" class="text-slate-400 hover:text-white transition p-1" title="Ulangi">
-              <i data-lucide="repeat" class="w-4 h-4"></i>
+              <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
             </button>
           </div>
 
-          <div class="flex items-center gap-2.5 bg-[#0e1322] px-3 py-2 rounded-xl border border-slate-800">
-            <i data-lucide="volume-2" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
+          <div class="flex items-center gap-2 bg-[#0e1322] px-2.5 py-1 rounded-xl border border-slate-800">
+            <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0"></i>
             <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="1" oninput="adjustVolume()" class="w-full cursor-pointer">
           </div>
         </div>
@@ -202,27 +183,27 @@
       </div>
 
       <!-- EQUALIZER CARD -->
-      <div class="bg-[#151c2e] p-3.5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-2 flex-shrink-0">
+      <div class="bg-[#151c2e] p-3 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-1.5 flex-shrink-0">
         <div class="flex justify-between items-center">
-          <div class="flex items-center gap-2 font-bold text-xs text-slate-200">
-            <i data-lucide="sliders" class="text-indigo-400 w-4 h-4"></i> Equalizer
+          <div class="flex items-center gap-1.5 font-bold text-xs text-slate-200">
+            <i data-lucide="sliders" class="text-indigo-400 w-3.5 h-3.5"></i> Equalizer
           </div>
-          <button onclick="resetEQ()" class="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 transition">
+          <button onclick="resetEQ()" class="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 transition">
             <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset
           </button>
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-xs">
-          <div class="bg-[#0e1322] p-2.5 rounded-xl border border-slate-800">
-            <div class="flex justify-between text-[11px] mb-1.5">
+          <div class="bg-[#0e1322] p-2 rounded-xl border border-slate-800">
+            <div class="flex justify-between text-[10px] mb-1">
               <span class="text-emerald-400 font-medium">Bass</span>
               <span id="bass-val" class="font-bold text-emerald-400">0 dB</span>
             </div>
             <input type="range" id="bass" min="-12" max="12" value="0" oninput="updateEQ()" class="w-full cursor-pointer">
           </div>
 
-          <div class="bg-[#0e1322] p-2.5 rounded-xl border border-slate-800">
-            <div class="flex justify-between text-[11px] mb-1.5">
+          <div class="bg-[#0e1322] p-2 rounded-xl border border-slate-800">
+            <div class="flex justify-between text-[10px] mb-1">
               <span class="text-pink-400 font-medium">Vokal</span>
               <span id="vokal-val" class="font-bold text-pink-400">0 dB</span>
             </div>
@@ -234,44 +215,44 @@
     </section>
 
     <!-- RIGHT COLUMN: PLAYLIST & ALBUM -->
-    <section class="md:col-span-7 bg-[#151c2e] p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-[500px] md:h-full min-h-0 overflow-hidden">
+    <section class="md:col-span-7 bg-[#151c2e] p-3.5 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-[450px] md:h-auto min-h-0 overflow-hidden">
       
       <!-- HEADER PLAYLIST -->
-      <div class="flex justify-between items-center mb-3 flex-shrink-0">
-        <div class="flex items-center gap-2 font-bold text-sm sm:text-base text-slate-100">
-          <i data-lucide="folder-heart" class="text-indigo-400 w-5 h-5"></i> Playlist & Album
+      <div class="flex justify-between items-center mb-2.5 flex-shrink-0">
+        <div class="flex items-center gap-2 font-bold text-xs sm:text-sm text-slate-100">
+          <i data-lucide="folder-heart" class="text-indigo-400 w-4 h-4"></i> Playlist & Album
         </div>
-        <span id="track-count" class="bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-[11px] px-2.5 py-0.5 rounded-full font-medium">0 Lagu</span>
+        <span id="track-count" class="bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 text-[10px] px-2 py-0.5 rounded-full font-medium">0 Lagu</span>
       </div>
 
       <!-- ALBUM & UPLOAD ACTIONS -->
-      <div class="flex flex-col gap-2.5 mb-3 flex-shrink-0">
+      <div class="flex flex-col gap-2 mb-2 flex-shrink-0">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <input type="file" id="local-file-input" accept="audio/*" multiple class="hidden" onchange="uploadToGoogleDrive(event)">
-          <button onclick="triggerUpload()" id="upload-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20">
-            <i data-lucide="upload-cloud" class="w-4 h-4"></i> Tambah Lagu
+          <button onclick="triggerUpload()" id="upload-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold py-1.5 px-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20">
+            <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Tambah Lagu
           </button>
 
           <div class="flex gap-1.5">
-            <input type="text" id="album-input" placeholder="Album Baru..." class="flex-grow bg-[#0e1322] text-xs px-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-200">
-            <button onclick="createAlbumFolder()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1 flex-shrink-0">
-              <i data-lucide="folder-plus" class="w-4 h-4"></i> Buat
+            <input type="text" id="album-input" placeholder="Album Baru..." class="flex-grow bg-[#0e1322] text-xs px-2.5 py-1.5 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 text-slate-200">
+            <button onclick="createAlbumFolder()" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 flex-shrink-0">
+              <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> Buat
             </button>
           </div>
         </div>
 
-        <div id="upload-status" class="hidden text-xs text-indigo-300 text-center py-1.5 bg-[#0e1322] rounded-xl border border-slate-800 animate-pulse">
+        <div id="upload-status" class="hidden text-xs text-indigo-300 text-center py-1 bg-[#0e1322] rounded-xl border border-slate-800 animate-pulse">
           Proses unggah lagu ke Google Drive...
         </div>
 
         <!-- ALBUM TABS -->
-        <div class="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar" id="album-tabs">
-          <button class="album-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0">Semua</button>
+        <div class="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar" id="album-tabs">
+          <button class="album-btn bg-indigo-600 text-white text-[11px] px-2.5 py-1 rounded-xl font-medium transition flex-shrink-0">Semua</button>
         </div>
       </div>
 
       <!-- PLAYLIST ITEM CONTAINER -->
-      <div id="playlist-container" class="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto pr-1">
+      <div id="playlist-container" class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-y-auto pr-1">
         <div class="text-slate-400 text-xs text-center py-12">Silakan "Sync Google Drive" untuk memuat lagu & album.</div>
       </div>
 
@@ -560,7 +541,7 @@
         wrapper.className = 'flex items-center gap-1 flex-shrink-0';
 
         const btn = document.createElement('button');
-        btn.className = `album-btn text-xs px-3 py-1.5 rounded-xl font-medium transition ${
+        btn.className = `album-btn text-[11px] px-2.5 py-1 rounded-xl font-medium transition ${
           isActive ? 'bg-indigo-600 text-white' : 'bg-[#0e1322] text-slate-400 hover:text-white border border-slate-800'
         }`;
         btn.innerText = folder.name;
@@ -569,9 +550,9 @@
 
         if (folder.id !== 'all') {
           const delBtn = document.createElement('button');
-          delBtn.className = 'text-slate-500 hover:text-red-400 p-1 transition';
+          delBtn.className = 'text-slate-500 hover:text-red-400 p-0.5 transition';
           delBtn.title = 'Hapus Album';
-          delBtn.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i>';
+          delBtn.innerHTML = '<i data-lucide="x" class="w-3 h-3"></i>';
           delBtn.onclick = (e) => {
             e.stopPropagation();
             deleteFileOrFolder(folder.id, folder.name, true);
@@ -680,7 +661,7 @@
         const isActive = originalIndex === currentTrackIndex;
 
         const item = document.createElement('div');
-        item.className = `flex items-center justify-between p-2.5 rounded-xl border transition ${
+        item.className = `flex items-center justify-between p-2 rounded-xl border transition ${
           isActive 
             ? 'bg-indigo-900/30 border-indigo-500/80 text-indigo-200' 
             : 'bg-[#0e1322] border-slate-800/80 hover:border-slate-700 text-slate-300'
@@ -691,28 +672,28 @@
         ).join('');
 
         item.innerHTML = `
-          <div class="flex items-center gap-2.5 overflow-hidden mr-2 cursor-pointer flex-grow min-w-0" onclick="playTrack(${originalIndex})">
-            <div class="w-8 h-8 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
-              <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-4 h-4"></i>
+          <div class="flex items-center gap-2 overflow-hidden mr-2 cursor-pointer flex-grow min-w-0" onclick="playTrack(${originalIndex})">
+            <div class="w-7 h-7 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'bg-indigo-950 text-indigo-400'} flex items-center justify-center flex-shrink-0">
+              <i data-lucide="${isActive ? 'disc' : 'music'}" class="w-3.5 h-3.5"></i>
             </div>
             <div class="text-xs font-medium truncate min-w-0 flex-1">${file.name}</div>
           </div>
 
-          <div class="flex items-center gap-1.5 flex-shrink-0" onclick="event.stopPropagation()">
-            <button id="move-btn-${file.id}" onclick="showMoveDropdown('${file.id}')" class="bg-[#151c2e] hover:bg-indigo-900/50 text-slate-300 border border-slate-700 hover:border-indigo-500 text-[10px] px-2 py-1 rounded-lg transition flex items-center gap-1">
+          <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+            <button id="move-btn-${file.id}" onclick="showMoveDropdown('${file.id}')" class="bg-[#151c2e] hover:bg-indigo-900/50 text-slate-300 border border-slate-700 hover:border-indigo-500 text-[10px] px-2 py-0.5 rounded-lg transition flex items-center gap-1">
               <i data-lucide="folder-output" class="w-3 h-3 text-indigo-400"></i> Pindah
             </button>
 
             <div id="move-box-${file.id}" class="hidden items-center gap-1">
-              <select id="move-select-${file.id}" class="bg-[#151c2e] text-[10px] text-slate-200 border border-indigo-500 rounded px-1.5 py-1 focus:outline-none">
+              <select id="move-select-${file.id}" class="bg-[#151c2e] text-[10px] text-slate-200 border border-indigo-500 rounded px-1 py-0.5 focus:outline-none">
                 ${folderOptions}
               </select>
-              <button id="save-btn-${file.id}" onclick="saveMoveFile('${file.id}', '${file.folderId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[10px] px-2 py-1 rounded transition flex items-center gap-0.5">
+              <button id="save-btn-${file.id}" onclick="saveMoveFile('${file.id}', '${file.folderId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[10px] px-1.5 py-0.5 rounded transition flex items-center gap-0.5">
                 <i data-lucide="check" class="w-3 h-3"></i> Save
               </button>
             </div>
 
-            <button onclick="deleteFileOrFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Hapus Lagu">
+            <button onclick="deleteFileOrFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Hapus Lagu">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -827,12 +808,12 @@
       const tonearm = document.getElementById('tonearm');
 
       if (isPlaying) {
-        btn.innerHTML = '<i data-lucide="pause" class="w-5 h-5 fill-current"></i>';
+        btn.innerHTML = '<i data-lucide="pause" class="w-4 h-4 fill-current"></i>';
         vinylDisc.classList.add('animate-spin-vinyl');
         tonearm.classList.remove('tonearm-idle');
         tonearm.classList.add('tonearm-playing');
       } else {
-        btn.innerHTML = '<i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>';
+        btn.innerHTML = '<i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i>';
         vinylDisc.classList.remove('animate-spin-vinyl');
         tonearm.classList.remove('tonearm-playing');
         tonearm.classList.add('tonearm-idle');
