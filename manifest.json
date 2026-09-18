@@ -1,14 +1,14 @@
 {
-  "background_color": "#0b0f19",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "praslupimusik",
-  "orientation": "any",
-  "scope": "/praslupimusik/",
-  "start_url": "/praslupimusik/",
-  "theme_color": "#151c2e",
-  "id": "praslupi-musik-app",
+  "short_name": "praslupi",
   "description": "Aplikasi pemutar musik online terhubung dengan Google Drive.",
+  "start_url": "/praslupimusik/",
+  "scope": "/praslupimusik/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#151c2e",
+  "orientation": "any",
+  "id": "praslupi-musik-app",
   "icons": [
     {
       "src": "icon-192x192.png",
@@ -21,5 +21,4 @@
       "type": "image/png"
     }
   ]
-  "short_name": "praslupi"
 }
