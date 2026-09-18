@@ -99,6 +99,24 @@
       background: #334155;
       border-radius: 10px;
     }
+
+    /* Animasi Teks Berjalan (Marquee) */
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .animate-marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marquee 12s linear infinite;
+    }
+
+    .marquee-container {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+    }
   </style>
 </head>
 <body class="bg-[#0b0f19] text-white min-h-screen md:h-screen w-full flex flex-col p-3 md:p-5 font-sans overflow-x-hidden md:overflow-hidden">
@@ -154,8 +172,8 @@
 
         <!-- TRACK INFO & VISUALIZER -->
         <div class="my-3">
-          <div id="current-title" class="text-center font-semibold text-slate-200 text-xs sm:text-sm truncate px-2 mb-2">
-            Tidak ada lagu dipilih
+          <div class="marquee-container text-center font-semibold text-slate-200 text-xs sm:text-sm px-2 mb-2">
+            <span id="current-title" class="inline-block">Tidak ada lagu dipilih</span>
           </div>
           <div class="w-full bg-[#0e1322] p-1.5 rounded-lg border border-slate-800 flex justify-center items-center">
             <canvas id="visualizer" class="w-full h-6 rounded"></canvas>
@@ -768,7 +786,11 @@
 
       currentTrackIndex = index;
       const file = playlist[index];
-      document.getElementById('current-title').innerText = file.name;
+      
+      const titleEl = document.getElementById('current-title');
+      titleEl.innerText = file.name;
+      titleEl.classList.add('animate-marquee');
+
       renderPlaylist();
 
       try {
